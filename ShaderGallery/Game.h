@@ -4,6 +4,7 @@
 #include "SimpleShader.h"
 #include <DirectXMath.h>
 
+#include "Lights.h"
 #include "Entity.h"
 #include "Camera.h"
 #include <vector>
@@ -44,6 +45,9 @@ private:
 
 	// Camera
 	Camera* GameCamera;
+
+	// Light
+	DirectionalLight light;
 
 	// Initialization helper methods - feel free to customize, combine, etc.
 	void LoadMaterials();

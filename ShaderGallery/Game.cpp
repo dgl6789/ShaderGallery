@@ -15,7 +15,7 @@ using namespace DirectX;
 Game::Game(HINSTANCE hInstance)
 	: DXCore(
 		hInstance,		   // The application's handle
-		"Assignment 4 - Dom Liotti",	   // Text for the window's title bar
+		"ShaderGallery",	   // Text for the window's title bar
 		1280,			   // Width of the window's client area
 		720,			   // Height of the window's client area
 		true)			   // Show extra stats (fps) in title bar?
@@ -61,9 +61,10 @@ void Game::Init()
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
 	LoadMaterials();
-	CreateBasicGeometry();
+	//CreateBasicGeometry();
 	
 	// Create the entities that we'll draw
+	/*
 	entities.push_back(new Entity(meshes[2], materials[0], context));
 	entities.push_back(new Entity(meshes[0], materials[0], context));
 	entities.push_back(new Entity(meshes[0], materials[0], context));
@@ -77,6 +78,13 @@ void Game::Init()
 	entities.push_back(new Entity(meshes[0], materials[0], context));
 	entities.push_back(new Entity(meshes[0], materials[0], context));
 	entities.push_back(new Entity(meshes[0], materials[0], context));
+	*/
+
+	entities.push_back(new Entity(new Mesh(device, "../../Assets/Models/helix.obj"), materials[0], context));
+
+	light.AmbientColor = XMFLOAT4(0.1, 0.1, 0.1, 1.0);
+	light.DiffuseColor = XMFLOAT4(1, 1, 1, 1);
+	light.Direction = XMFLOAT3(1, -1, 0);
 
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
@@ -104,6 +112,7 @@ void Game::CreateBasicGeometry()
 	// Set up the vertices of the triangle we would like to draw
 	// - We're going to copy this array, exactly as it exists in memory
 	//    over to a DirectX-controlled data structure (the vertex buffer)
+	/*
 	Vertex verticesTriangle[] =
 	{
 		{ XMFLOAT3(0.0f,  0.35f,  0.0f), XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f) },
@@ -148,6 +157,7 @@ void Game::CreateBasicGeometry()
 	meshes.push_back(new Mesh(device, verticesTriangle, indicesTriangle, 3));
 	meshes.push_back(new Mesh(device, verticesSquare, indicesSquare, 6));
 	meshes.push_back(new Mesh(device, verticesCircle, indicesCircle, 30));
+	*/
 }
 
 // --------------------------------------------------------
@@ -174,6 +184,7 @@ void Game::Update(float deltaTime, float totalTime)
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
 
+	/*
 	// Assignment 3
 	// Make a circle in the center that rotates
 	float sinTime = 2.0f +  sin(totalTime * 5.0f) / 5.0f;
@@ -187,7 +198,10 @@ void Game::Update(float deltaTime, float totalTime)
 		entities[i]->SetScale(XMFLOAT3(0.05f * i, 0.05f * i, 0.05f * i));
 		entities[i]->SetRotation(XMFLOAT3(0, 0, -totalTime * 0.5f + (i * 10)));
 		entities[i]->SetPosition(XMFLOAT3(sin(totalTime * 0.75f + (i * 0.15f)) * 2.0f, 0, cos(totalTime * 0.75f + (i * 0.15f)) * 2.0f));
-	}
+	}*/
+
+	//rotate the helix that exists in entities
+	entities[0]->SetRotation(XMFLOAT3(0, totalTime * 0.5f, 0));
 
 	GameCamera->Update(deltaTime);
 }
@@ -210,10 +224,12 @@ void Game::Draw(float deltaTime, float totalTime)
 		1.0f,
 		0);
 
+	
 	// Set buffers in the input assembler
 	//  - Do this ONCE PER OBJECT you're drawing, since each object might
 	//    have different geometry.
 	for (int i = 0; i < entities.size(); i++) {
+		entities[i]->GetMaterial()->GetPixelShader()->SetData("light", &light, sizeof(DirectionalLight));
 		entities[i]->Render(GameCamera->GetView(), GameCamera->GetProjection());
 	}
 

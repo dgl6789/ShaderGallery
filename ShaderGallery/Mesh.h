@@ -2,10 +2,13 @@
 #include "Game.h"
 #include "Vertex.h"
 
+#include <fstream>
+
 /// Mesh class defines a container for buffers which
 /// define a discrete geometric body composed of Vertices.
 class Mesh {
 public:
+	Mesh(ID3D11Device* pDevice, char* fileName);
 	Mesh(ID3D11Device* pDevice, Vertex* vertices, int* indices, int pNumVertices);
 	~Mesh();
 

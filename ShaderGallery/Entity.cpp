@@ -79,6 +79,11 @@ void Entity::SetMesh(Mesh * pMesh) { mesh = pMesh; }
 // Set the material the mesh will be rendered with
 void Entity::SetMaterial(Material * pMaterial) { material = pMaterial; }
 
+Material * Entity::GetMaterial()
+{
+	return material;
+}
+
 void Entity::PrepMaterial(XMFLOAT4X4 pView, XMFLOAT4X4 pProjection) {
 	// Send data to shader variables
 	//  - Do this ONCE PER OBJECT you're drawing

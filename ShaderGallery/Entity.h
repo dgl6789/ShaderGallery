@@ -29,6 +29,8 @@ public:
 
 	void SetMaterial(Material* pMaterial); // Change/set the material to render
 
+	Material* GetMaterial(); // Get material
+
 	void PrepMaterial(XMFLOAT4X4 pView, XMFLOAT4X4 pProjection); // Set data for drawing
 
 	void Render(XMFLOAT4X4 pView, XMFLOAT4X4 pProjection); // Render the entity
