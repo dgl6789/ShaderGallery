@@ -4,16 +4,16 @@ Material::Material(SimpleVertexShader * pVertexShader, SimplePixelShader * pPixe
 {
 	SetVertexShader(pVertexShader);
 	SetPixelShader(pPixelShader);
-	SetSRV(pSRV);
-	SetSampleState(pSampleState);
+	srv = pSRV;
+	sampleState = pSampleState;
+	//SetSRV(pSRV);
+	//SetSampleState(pSampleState);
 }
 
 Material::~Material()
 {
 	delete vertexShader;
 	delete pixelShader;
-	delete srv;
-	delete sampleState;
 }
 
 SimpleVertexShader * Material::GetVertexShader() { return vertexShader; }

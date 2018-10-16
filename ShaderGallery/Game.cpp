@@ -24,6 +24,10 @@ Game::Game(HINSTANCE hInstance)
 	GameCamera = new Camera(0, 0, -5);
 	GameCamera->UpdateProjectionMatrix((float)width / height);
 
+	pSRV = 0;
+	pSampleState = 0;
+	pSampleDescription = 0;
+
 	meshes = { };
 	entities = { };
 	materials = { };
@@ -43,12 +47,16 @@ Game::Game(HINSTANCE hInstance)
 // --------------------------------------------------------
 Game::~Game()
 {
+	pSRV->Release();
+	pSampleState->Release();
 	// Delete each added resource
 	for (auto& m : meshes) delete m;
 	for (auto& m : materials) delete m;
 	for (auto& e : entities) delete e;
 
 	delete GameCamera;
+	delete pSampleDescription;
+
 }
 
 // --------------------------------------------------------
@@ -61,7 +69,9 @@ void Game::Init()
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
 	
-	/////////-------->LoadMaterials(); STILL NEED THIS
+	CreateTextureResources();
+	LoadTextures();
+	LoadMaterials();
 	
 	
 	//CreateBasicGeometry();
@@ -85,7 +95,7 @@ void Game::Init()
 
 	entities.push_back(new Entity(new Mesh(device, "../../Assets/Models/helix.obj"), materials[0], context));
 
-	light.AmbientColor = XMFLOAT4(0.1, 0.1, 0.1, 1.0);
+	light.AmbientColor = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
 	light.DiffuseColor = XMFLOAT4(1, 1, 1, 1);
 	light.Direction = XMFLOAT3(1, -1, 0);
 
@@ -102,16 +112,34 @@ void Game::Init()
 //   data to individual variables on the GPU
 // --------------------------------------------------------
 void Game::LoadMaterials() {
-	//STILL NEED THIS
-	//MATERIAL HAS SOME NEW PARAMETERS TO FULFILL
-	//materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
-	//materials[0]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
-	//materials[0]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
+	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context), pSRV, pSampleState));
+	materials[0]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
+	materials[0]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 }
 
 void Game::LoadTextures()
 {
-	//CreateWICTextureFromFile();
+	CreateWICTextureFromFile(device, context, L"../../Assets/Textures/Lava_005_COLOR.jpg", 0, &pSRV);
+}
+
+void Game::CreateTextureResources()
+{
+	pSampleDescription = new D3D11_SAMPLER_DESC();
+	pSampleDescription->AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	pSampleDescription->AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	pSampleDescription->AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	pSampleDescription->BorderColor[0] = 0.0f;
+	pSampleDescription->BorderColor[1] = 0.0f;
+	pSampleDescription->BorderColor[2] = 0.0f;
+	pSampleDescription->BorderColor[3] = 0.0f;
+	pSampleDescription->ComparisonFunc = D3D11_COMPARISON_NEVER;
+	pSampleDescription->Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	pSampleDescription->MaxAnisotropy = 0;
+	pSampleDescription->MaxLOD = D3D11_FLOAT32_MAX;
+	pSampleDescription->MinLOD = 0;
+	pSampleDescription->MipLODBias = 0;
+
+	device->CreateSamplerState(pSampleDescription, &pSampleState);
 }
 
 // --------------------------------------------------------

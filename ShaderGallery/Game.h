@@ -4,6 +4,7 @@
 #include "SimpleShader.h"
 #include <DirectXMath.h>
 
+#include <d3d11sdklayers.h>
 #include "WICTextureLoader.h"
 #include "Lights.h"
 #include "Entity.h"
@@ -52,9 +53,15 @@ private:
 	// Light
 	DirectionalLight light;
 
+	// Texture Sampling
+	ID3D11ShaderResourceView * pSRV;
+	ID3D11SamplerState * pSampleState;
+	D3D11_SAMPLER_DESC * pSampleDescription;
+
 	// Initialization helper methods - feel free to customize, combine, etc.
 	void LoadMaterials();
 	void LoadTextures();
+	void CreateTextureResources();
 	void CreateBasicGeometry();
 
 	// Keeps track of the old mouse position.  Useful for 

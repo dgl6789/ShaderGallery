@@ -1,4 +1,9 @@
-﻿  compilation object save succeeded; see C:\Users\Thunder Hammer\Repositories\ShaderGallery\x64\Debug\VertexShader.cso
-  Game.cpp
-c:\users\thunder hammer\repositories\shadergallery\shadergallery\game.cpp(85): warning C4305: 'argument': truncation from 'double' to 'float'
+﻿  Game.cpp
+  Generating Code...
+  Skipping... (no relevant changes detected)
+  Mesh.cpp
+  Material.cpp
+  Main.cpp
+  Entity.cpp
+  Camera.cpp
   ShaderGallery.vcxproj -> C:\Users\Thunder Hammer\Repositories\ShaderGallery\x64\Debug\ShaderGallery.exe
