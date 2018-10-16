@@ -1,10 +1,11 @@
 #pragma once
 #include "Game.h"
+#include "WICTextureLoader.h"
 
 class Material
 {
 public:
-	Material(SimpleVertexShader* pVertexShader, SimplePixelShader* pPixelShader, ID3D11ShaderResourceView * pSRV, ID3D11SamplerState* pSampleState);
+	Material(SimpleVertexShader* pVertexShader, SimplePixelShader* pPixelShader);
 	~Material();
 
 	SimpleVertexShader* GetVertexShader();
@@ -14,13 +15,13 @@ public:
 	
 	void SetVertexShader(SimpleVertexShader* pVertexShader);
 	void SetPixelShader(SimplePixelShader* pPixelShader);
-	void SetSRV(ID3D11ShaderResourceView* pSRV);
-	void SetSampleState(ID3D11SamplerState* pSampleState);
+	void SetTexture(ID3D11Device* device, ID3D11DeviceContext* context, wchar_t* fileName);
 
 private:
 	SimpleVertexShader* vertexShader;
 	SimplePixelShader* pixelShader;
 	ID3D11ShaderResourceView* srv;
 	ID3D11SamplerState* sampleState;
+	D3D11_SAMPLER_DESC * sampleDescription;
 };
 

@@ -1,19 +1,21 @@
 #include "Material.h"
 
-Material::Material(SimpleVertexShader * pVertexShader, SimplePixelShader * pPixelShader, ID3D11ShaderResourceView * pSRV, ID3D11SamplerState * pSampleState)
+Material::Material(SimpleVertexShader * pVertexShader, SimplePixelShader * pPixelShader)
 {
 	SetVertexShader(pVertexShader);
 	SetPixelShader(pPixelShader);
-	srv = pSRV;
-	sampleState = pSampleState;
-	//SetSRV(pSRV);
-	//SetSampleState(pSampleState);
+	srv = 0;
+	sampleState = 0;
+	sampleDescription = 0;
 }
 
 Material::~Material()
 {
 	delete vertexShader;
 	delete pixelShader;
+	delete sampleDescription;
+	srv->Release();
+	sampleState->Release();
 }
 
 SimpleVertexShader * Material::GetVertexShader() { return vertexShader; }
@@ -28,6 +30,24 @@ void Material::SetVertexShader(SimpleVertexShader * pVertexShader) { vertexShade
 
 void Material::SetPixelShader(SimplePixelShader * pPixelShader) { pixelShader = pPixelShader; }
 
-void Material::SetSRV(ID3D11ShaderResourceView * pSRV) { srv = pSRV; }
+void Material::SetTexture(ID3D11Device * device, ID3D11DeviceContext * context, wchar_t * fileName)
+{
+	sampleDescription = new D3D11_SAMPLER_DESC();
+	sampleDescription->AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampleDescription->AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampleDescription->AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampleDescription->BorderColor[0] = 0.0f;
+	sampleDescription->BorderColor[1] = 0.0f;
+	sampleDescription->BorderColor[2] = 0.0f;
+	sampleDescription->BorderColor[3] = 0.0f;
+	sampleDescription->ComparisonFunc = D3D11_COMPARISON_NEVER;
+	sampleDescription->Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sampleDescription->MaxAnisotropy = 0;
+	sampleDescription->MaxLOD = D3D11_FLOAT32_MAX;
+	sampleDescription->MinLOD = 0;
+	sampleDescription->MipLODBias = 0;
 
-void Material::SetSampleState(ID3D11SamplerState * pSampleState) { sampleState = pSampleState; }
+	device->CreateSamplerState(sampleDescription, &sampleState);
+
+	CreateWICTextureFromFile(device, context, fileName, 0, &srv);
+}
