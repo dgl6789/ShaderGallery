@@ -4,6 +4,7 @@
 #include "SimpleShader.h"
 #include <DirectXMath.h>
 
+#include "WICTextureLoader.h"
 #include "Lights.h"
 #include "Entity.h"
 #include "Camera.h"
@@ -13,6 +14,8 @@ class Mesh;
 class Entity;
 class Camera;
 class Material;
+
+using namespace DirectX;
 
 class Game : public DXCore {
 
@@ -51,6 +54,7 @@ private:
 
 	// Initialization helper methods - feel free to customize, combine, etc.
 	void LoadMaterials();
+	void LoadTextures();
 	void CreateBasicGeometry();
 
 	// Keeps track of the old mouse position.  Useful for 

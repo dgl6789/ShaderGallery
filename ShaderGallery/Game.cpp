@@ -60,7 +60,10 @@ void Game::Init()
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
-	LoadMaterials();
+	
+	/////////-------->LoadMaterials(); STILL NEED THIS
+	
+	
 	//CreateBasicGeometry();
 	
 	// Create the entities that we'll draw
@@ -99,9 +102,16 @@ void Game::Init()
 //   data to individual variables on the GPU
 // --------------------------------------------------------
 void Game::LoadMaterials() {
-	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
-	materials[0]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
-	materials[0]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
+	//STILL NEED THIS
+	//MATERIAL HAS SOME NEW PARAMETERS TO FULFILL
+	//materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
+	//materials[0]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
+	//materials[0]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
+}
+
+void Game::LoadTextures()
+{
+	//CreateWICTextureFromFile();
 }
 
 // --------------------------------------------------------
