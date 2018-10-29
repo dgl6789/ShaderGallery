@@ -42,15 +42,18 @@ private:
 
 	// Vector of active entities
 	std::vector<Entity*> entities;
+	std::vector<Entity*> GUIElements;
 
 	// Vector of materials
 	std::vector<Material*> materials;
 
-	// Camera
+	// Cameras
 	Camera* GameCamera;
+	Camera* GUICamera;
 
 	// Light
 	DirectionalLight light;
+	DirectionalLight fullBright;
 
 	// Initialization helper methods - feel free to customize, combine, etc.
 	void LoadMaterials();

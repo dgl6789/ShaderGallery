@@ -24,6 +24,10 @@ Game::Game(HINSTANCE hInstance)
 	GameCamera = new Camera(0, 0, -5);
 	GameCamera->UpdateProjectionMatrix((float)width / height);
 
+	GUICamera = new Camera(0, 0, -5);
+	GUICamera->MakeGUI();
+	GUICamera->UpdateProjectionMatrix((float)width / 100, (float)height / 100);
+
 	meshes = { };
 	entities = { };
 	materials = { };
@@ -47,8 +51,10 @@ Game::~Game()
 	for (auto& m : meshes) delete m;
 	for (auto& m : materials) delete m;
 	for (auto& e : entities) delete e;
+	for (auto& g : GUIElements) delete g;
 
 	delete GameCamera;
+	delete GUICamera;
 }
 
 // --------------------------------------------------------
@@ -82,13 +88,23 @@ void Game::Init()
 	entities.push_back(new Entity(meshes[0], materials[0], context));
 	*/
 
+	// Game Objects
 	meshes.push_back(new Mesh(device, "../../Assets/Models/helix.obj"));
 
+	//GUI Mesh
+	meshes.push_back(new Mesh(device, "../../Assets/Models/cube.obj"));
+
+
 	entities.push_back(new Entity(meshes[0], materials[0], context));
+	GUIElements.push_back(new Entity(meshes[1], materials[0], context));
 
 	light.AmbientColor = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
 	light.DiffuseColor = XMFLOAT4(1, 1, 1, 1);
 	light.Direction = XMFLOAT3(1, -1, 0);
+
+	fullBright.AmbientColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	fullBright.DiffuseColor = XMFLOAT4(1, 1, 1, 1);
+	fullBright.Direction = XMFLOAT3(1, -1, 0);
 
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
@@ -178,6 +194,8 @@ void Game::OnResize()
 	// camera exists
 	if (GameCamera)
 		GameCamera->UpdateProjectionMatrix((float)width / height);
+	if(GUICamera)
+		GUICamera->UpdateProjectionMatrix((float)width / 100, (float)height / 100);
 }
 
 // --------------------------------------------------------
@@ -207,6 +225,7 @@ void Game::Update(float deltaTime, float totalTime)
 
 	//rotate the helix that exists in entities
 	entities[0]->SetRotation(XMFLOAT3(0, totalTime * 0.5f, 0));
+	GUIElements[0]->SetPosition(XMFLOAT3((float)width / (2 * 100), 1, 2));
 
 	GameCamera->Update(deltaTime);
 }
@@ -236,6 +255,10 @@ void Game::Draw(float deltaTime, float totalTime)
 	for (int i = 0; i < entities.size(); i++) {
 		entities[i]->GetMaterial()->GetPixelShader()->SetData("light", &light, sizeof(DirectionalLight));
 		entities[i]->Render(GameCamera->GetView(), GameCamera->GetProjection());
+	}
+	for (int i = 0; i < entities.size(); i++) {
+		GUIElements[i]->GetMaterial()->GetPixelShader()->SetData("light", &fullBright, sizeof(DirectionalLight));
+		GUIElements[i]->Render(GUICamera->GetView(), GUICamera->GetProjection());
 	}
 
 	// Present the back buffer to the user

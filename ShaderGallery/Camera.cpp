@@ -49,6 +49,7 @@ void Camera::RotateBy(float x, float y)
 // Camera's update, which looks for key presses
 void Camera::Update(float dt)
 {
+	if (GUI) return;
 	// Current speed
 	float speed = dt * 3;
 
@@ -71,6 +72,7 @@ void Camera::Update(float dt)
 // Creates a new view matrix based on current position and orientation
 void Camera::UpdateViewMatrix()
 {
+	if (GUI) return;
 	// Rotate the standard "forward" matrix by our rotation
 	// This gives us our "look direction"
 	XMVECTOR dir = XMVector3Rotate(XMVectorSet(0, 0, 1, 0), XMLoadFloat4(&rotation));
@@ -86,10 +88,25 @@ void Camera::UpdateViewMatrix()
 // Updates the projection matrix
 void Camera::UpdateProjectionMatrix(float aspectRatio)
 {
+	if (GUI) return;
 	XMMATRIX P = XMMatrixPerspectiveFovLH(
 		0.25f * XM_PI,		// Field of View Angle
 		aspectRatio,		// Aspect ratio
 		0.1f,				// Near clip plane distance
 		100.0f);			// Far clip plane distance
 	XMStoreFloat4x4(&projMatrix, XMMatrixTranspose(P)); // Transpose for HLSL!
+}
+
+void Camera::UpdateProjectionMatrix(float width, float height)
+{
+	if (!GUI) return;
+	XMStoreFloat4x4(&projMatrix, XMMatrixTranspose(XMMatrixOrthographicOffCenterLH(0.0f, width, 0.0f, height, 0.0f, 100.0f)));
+}
+
+void Camera::MakeGUI()
+{
+	// Set up the view
+	//XMStoreFloat4x4(&viewMatrix, XMMatrixTranspose(XMMatrixIdentity()));
+	XMStoreFloat4x4(&projMatrix, XMMatrixTranspose(XMMatrixOrthographicOffCenterLH(0.0f, 1920.0f, 0.0f, 1080.0f, 0.0f, 100.0f)));
+	GUI = true;
 }
