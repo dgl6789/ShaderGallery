@@ -33,6 +33,9 @@
     <ClCompile Include="Material.cpp">
       <Filter>Code Files</Filter>
     </ClCompile>
+    <ClCompile Include="BoundingBox.cpp">
+      <Filter>Code Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DXCore.h">
@@ -60,6 +63,9 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Lights.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="BoundingBox.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

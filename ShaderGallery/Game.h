@@ -9,6 +9,7 @@
 #include "Entity.h"
 #include "Camera.h"
 #include <vector>
+#include "BoundingBox.h"
 
 class Mesh;
 class Entity;
@@ -45,6 +46,9 @@ private:
 
 	// Vector of materials
 	std::vector<Material*> materials;
+
+	// Vector to hold the world boundary boxes
+	std::vector<BoundingBox*> worldBounds;
 
 	// Camera
 	Camera* GameCamera;

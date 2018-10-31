@@ -47,6 +47,7 @@ Game::~Game()
 	for (auto& m : meshes) delete m;
 	for (auto& m : materials) delete m;
 	for (auto& e : entities) delete e;
+	for (auto& w : worldBounds) delete w;
 
 	delete GameCamera;
 }
@@ -85,6 +86,10 @@ void Game::Init()
 	meshes.push_back(new Mesh(device, "../../Assets/Models/helix.obj"));
 
 	entities.push_back(new Entity(meshes[0], materials[0], context));
+
+	// Define the world boundaries
+	worldBounds.push_back(new BoundingBox(XMFLOAT2(0.0f, 0.0f), XMFLOAT2(5.0f, 5.0f)));
+	worldBounds.push_back(new BoundingBox(XMFLOAT2(0.0f, 7.5f), XMFLOAT2(2.5f, 5.0f)));
 
 	light.AmbientColor = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
 	light.DiffuseColor = XMFLOAT4(1, 1, 1, 1);
@@ -208,7 +213,45 @@ void Game::Update(float deltaTime, float totalTime)
 	//rotate the helix that exists in entities
 	entities[0]->SetRotation(XMFLOAT3(0, totalTime * 0.5f, 0));
 
+	// Movement
+	XMFLOAT3 prevPosition = GameCamera->GetPosition();	// Position before the move
 	GameCamera->Update(deltaTime);
+
+	XMFLOAT3 newPosition = GameCamera->GetPosition();	// Position after the move
+
+	bool willBeInBox = false;
+	int cameraCurBox = -1;
+	for (int i = 0; i < worldBounds.size(); i++)
+	{
+		// Was the player in this box before moving?
+		if (worldBounds[i]->PointInside(prevPosition))
+		{
+			cameraCurBox = i;
+		}
+
+		// Is the player in this box after moving?
+		if (worldBounds[i]->PointInside(newPosition))
+		{
+			// If so, we don't need to bother checking if they're outside of the rest of the boxes; they're in bounds
+			willBeInBox = true;
+			break;
+		}
+	}
+
+	// If the player's move will put them out of bounds, make sure they stay in their current box!
+	if (!willBeInBox)
+	{
+		// Failsafe, in case the player somehow started the frame out of bounds
+		if (cameraCurBox == -1)
+		{
+			cameraCurBox = 0;
+		}
+
+		// Adjust the player's new position to the edge of their box
+		newPosition.x = worldBounds[cameraCurBox]->VectorToEdge(newPosition).x;
+		newPosition.z = worldBounds[cameraCurBox]->VectorToEdge(newPosition).z;
+		GameCamera->TranslateTo(newPosition.x, 0.0f, newPosition.z);
+	}
 }
 
 // --------------------------------------------------------
