@@ -43,6 +43,7 @@ private:
 
 	// Vector of active entities
 	std::vector<Entity*> entities;
+	std::vector<Entity*> GUIElements;
 
 	// Vector of materials
 	std::vector<Material*> materials;
@@ -50,11 +51,13 @@ private:
 	// Vector to hold the world boundary boxes
 	std::vector<BoundingBox*> worldBounds;
 
-	// Camera
+	// Cameras
 	Camera* GameCamera;
+	Camera* GUICamera;
 
 	// Light
 	DirectionalLight light;
+	DirectionalLight fullBright;
 
 	// Initialization helper methods - feel free to customize, combine, etc.
 	void LoadMaterials();

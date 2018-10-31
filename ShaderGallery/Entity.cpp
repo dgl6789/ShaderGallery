@@ -61,6 +61,11 @@ void Entity::OffsetPosition(XMFLOAT3 pOffset) {
 	dirty = true;
 }
 
+void Entity::SetActive(bool pActive)
+{
+	active = pActive;
+}
+
 // Set this entity's rotation (Euler)
 void Entity::SetRotation(XMFLOAT3 pNewRotation) { 
 	rotation = pNewRotation;
@@ -115,6 +120,9 @@ void Entity::PrepMaterial(XMFLOAT4X4 pView, XMFLOAT4X4 pProjection) {
 
 // Render this entity.
 void Entity::Render(XMFLOAT4X4 pView, XMFLOAT4X4 pProjection) {
+	// Is this entity currently active?
+	if (!active) return; 
+
 	// Prepare the pixel/vertex shaders for rendering
 	PrepMaterial(pView, pProjection);
 

@@ -1,2 +1,11 @@
-﻿  Game.cpp
+﻿  BoundingBox.cpp
+  Camera.cpp
+  DXCore.cpp
+  Entity.cpp
+  Game.cpp
+  Main.cpp
+  Material.cpp
+  Mesh.cpp
+  SimpleShader.cpp
+  Generating Code...
   ShaderGallery.vcxproj -> Z:\IGMProfile\Documents\GGP\ShaderGallery\x64\Debug\ShaderGallery.exe

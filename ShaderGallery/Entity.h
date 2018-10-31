@@ -21,6 +21,7 @@ public:
 
 	void SetPosition(XMFLOAT3 pNewPosition); // Set position
 	void OffsetPosition(XMFLOAT3 pOffset); // Add to current position
+	void SetActive(bool pActive); // Should this be updated/rendered?
 
 	void SetRotation(XMFLOAT3 pNewRotation); // Set rotation (Euler)
 	void SetScale(XMFLOAT3 pNewScale); // Set scale
@@ -37,6 +38,7 @@ public:
 
 private:
 	bool dirty; // Does this entity's world matrix need to be updated?
+	bool active = true; // Is this a GUI element? 
 
 	ID3D11DeviceContext* deviceContext; // Rendering context
 

@@ -18,6 +18,11 @@ public:
 	void Update(float dt);
 	void UpdateViewMatrix();
 	void UpdateProjectionMatrix(float aspectRatio);
+	void UpdateProjectionMatrix(float width, float height);
+
+	// Make Camera Orthographic GUI
+	void MakeGUI();
+
 
 	// Getters
 	XMFLOAT3 GetPosition() { return position; }
@@ -29,6 +34,9 @@ public:
 	float GetMouseSensitivity() { return mouseSensitivity; }
 
 private:
+	// Is GUI?
+	bool GUI = false;
+
 	// Camera matrices
 	XMFLOAT4X4 viewMatrix;
 	XMFLOAT4X4 projMatrix;
