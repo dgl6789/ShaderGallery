@@ -5,7 +5,6 @@
 *.slo
 *.lo
 *.o
-/ShaderGallery/x64
 
 # Precompiled Headers
 *.gch
@@ -31,5 +30,7 @@
 *.out
 *.app
 
-# Visual Studios
-/.vs
+# Folders
+.vs/
+ShaderGallery/x64/
+packages/

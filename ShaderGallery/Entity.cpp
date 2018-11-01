@@ -66,6 +66,21 @@ void Entity::SetActive(bool pActive)
 	active = pActive;
 }
 
+XMFLOAT3 Entity::GetPosition()
+{
+	return position;
+}
+
+XMFLOAT3 Entity::GetScale()
+{
+	return scale;
+}
+
+XMFLOAT3 Entity::GetRotation()
+{
+	return rotation;
+}
+
 // Set this entity's rotation (Euler)
 void Entity::SetRotation(XMFLOAT3 pNewRotation) { 
 	rotation = pNewRotation;

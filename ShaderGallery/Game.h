@@ -3,6 +3,7 @@
 #include "DXCore.h"
 #include "SimpleShader.h"
 #include <DirectXMath.h>
+#include <math.h>
 
 #include <d3d11sdklayers.h>
 #include "Lights.h"
@@ -47,6 +48,7 @@ private:
 
 	// Vector of materials
 	std::vector<Material*> materials;
+	std::vector<Material*> starMaterials;
 
 	// Vector to hold the world boundary boxes
 	std::vector<BoundingBox*> worldBounds;
@@ -62,6 +64,11 @@ private:
 	// Initialization helper methods - feel free to customize, combine, etc.
 	void LoadMaterials();
 	void CreateBasicGeometry();
+	void DoStars();
+
+	int starRating = -1;
+	int currentStarRating = -1;
+	bool canRate = false;
 
 	// Keeps track of the old mouse position.  Useful for 
 	// determining how far the mouse moved in a single frame.

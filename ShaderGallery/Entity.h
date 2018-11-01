@@ -23,6 +23,10 @@ public:
 	void OffsetPosition(XMFLOAT3 pOffset); // Add to current position
 	void SetActive(bool pActive); // Should this be updated/rendered?
 
+	XMFLOAT3 GetPosition();
+	XMFLOAT3 GetScale();
+	XMFLOAT3 GetRotation();
+
 	void SetRotation(XMFLOAT3 pNewRotation); // Set rotation (Euler)
 	void SetScale(XMFLOAT3 pNewScale); // Set scale
 

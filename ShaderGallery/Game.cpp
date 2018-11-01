@@ -31,6 +31,7 @@ Game::Game(HINSTANCE hInstance)
 	meshes = { };
 	entities = { };
 	materials = { };
+	starMaterials = { };
 
 #if defined(DEBUG) || defined(_DEBUG)
 	// Do we want a console window?  Probably only in debug mode
@@ -50,6 +51,7 @@ Game::~Game()
 	// Delete each added resource
 	for (auto& m : meshes) delete m;
 	for (auto& m : materials) delete m;
+	for (auto& m : starMaterials) delete m;
 	for (auto& e : entities) delete e;
 	for (auto& w : worldBounds) delete w;
 	for (auto& g : GUIElements) delete g;
@@ -69,39 +71,35 @@ void Game::Init()
 	//  - You'll be expanding and/or replacing these later
 	LoadMaterials();
 	
-	
-	//CreateBasicGeometry();
-	
-	// Create the entities that we'll draw
-	/*
-	entities.push_back(new Entity(meshes[2], materials[0], context));
-	entities.push_back(new Entity(meshes[0], materials[0], context));
-	entities.push_back(new Entity(meshes[0], materials[0], context));
-	entities.push_back(new Entity(meshes[0], materials[0], context));
-	entities.push_back(new Entity(meshes[0], materials[0], context));
-	entities.push_back(new Entity(meshes[0], materials[0], context));
-	entities.push_back(new Entity(meshes[0], materials[0], context));
-	entities.push_back(new Entity(meshes[0], materials[0], context));
-	entities.push_back(new Entity(meshes[0], materials[0], context));
-	entities.push_back(new Entity(meshes[0], materials[0], context));
-	entities.push_back(new Entity(meshes[0], materials[0], context));
-	entities.push_back(new Entity(meshes[0], materials[0], context));
-	entities.push_back(new Entity(meshes[0], materials[0], context));
-	*/
 
 	// Game Objects
 	meshes.push_back(new Mesh(device, "../../Assets/Models/helix.obj"));
+	meshes.push_back(new Mesh(device, "../../Assets/Models/cube_inverted.obj"));
 
 	//GUI Mesh
-	meshes.push_back(new Mesh(device, "../../Assets/Models/cube.obj"));
+	//meshes.push_back(new Mesh(device, "../../Assets/Models/cube.obj"));
+	meshes.push_back(new Mesh(device, "../../Assets/Models/plane.obj"));
 
 
 	entities.push_back(new Entity(meshes[0], materials[0], context));
-	GUIElements.push_back(new Entity(meshes[1], materials[0], context));
+	entities.push_back(new Entity(meshes[1], materials[1], context));
+	//entities.push_back(new Entity(meshes[1], materials[1], context));
+
+	GUIElements.push_back(new Entity(meshes[2], starMaterials[0], context));
+	GUIElements[0]->SetRotation(XMFLOAT3(-(3.141592654f / 2), 0, 0));
+	GUIElements[0]->SetScale(XMFLOAT3(2.56f, .5f, 0.5f));
+
 
 	// Define the world boundaries
 	worldBounds.push_back(new BoundingBox(XMFLOAT2(0.0f, 0.0f), XMFLOAT2(5.0f, 5.0f)));
 	worldBounds.push_back(new BoundingBox(XMFLOAT2(0.0f, 7.5f), XMFLOAT2(2.5f, 5.0f)));
+
+	//make walls "visible" by adding an inverted box to represent their dimensions
+	entities[1]->SetScale(XMFLOAT3(worldBounds[0]->GetHalfSize().x + 0.2f, 3.0f, worldBounds[0]->GetHalfSize().y + 0.2f));
+	entities[1]->SetPosition(XMFLOAT3(worldBounds[0]->GetCenter().x, 0.0f, worldBounds[0]->GetCenter().y));
+
+	//entities[2]->SetScale(XMFLOAT3(worldBounds[1]->GetHalfSize().x + 0.2f, 3.0f, worldBounds[0]->GetHalfSize().y + 0.2f));
+	//entities[2]->SetPosition(XMFLOAT3(worldBounds[1]->GetCenter().x, 0.0f, worldBounds[0]->GetCenter().y));
 
 	light.AmbientColor = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
 	light.DiffuseColor = XMFLOAT4(1, 1, 1, 1);
@@ -124,10 +122,33 @@ void Game::Init()
 //   data to individual variables on the GPU
 // --------------------------------------------------------
 void Game::LoadMaterials() {
+
+	// Lava Texture
 	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
 	materials[0]->SetTexture(device, context, L"../../Assets/Textures/Lava_005_COLOR.jpg");
 	materials[0]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 	materials[0]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
+
+	// Panel Texture
+	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
+	materials[1]->SetTexture(device, context, L"../../Assets/Textures/panel_normal.png");
+	materials[1]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
+	materials[1]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
+
+	//loop through all the ui star materials
+	for (int i = 0; i < 6; i++) {
+		starMaterials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
+
+		//concatenate a wstring then reference its first index to get a wchar_t* object
+		std::wstring w_file = L"../../Assets/Textures/UI/ui_starTray_";
+		w_file += std::to_wstring(i);
+		w_file += L".png";
+
+		starMaterials[i]->SetTexture(device, context, &w_file[0]);
+		starMaterials[i]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
+		starMaterials[i]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
+	}
+	
 }
 
 // --------------------------------------------------------
@@ -135,55 +156,7 @@ void Game::LoadMaterials() {
 // --------------------------------------------------------
 void Game::CreateBasicGeometry()
 {
-	// Set up the vertices of the triangle we would like to draw
-	// - We're going to copy this array, exactly as it exists in memory
-	//    over to a DirectX-controlled data structure (the vertex buffer)
-	/*
-	Vertex verticesTriangle[] =
-	{
-		{ XMFLOAT3(0.0f,  0.35f,  0.0f), XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3(0.5f,  -0.5f,  0.0f), XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3(-0.5f,  -0.5f,  0.0f), XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) },
-	};
 
-	Vertex verticesSquare[] = 
-	{ 
-		{ XMFLOAT3(-1.8f,   -0.5f,  0.0f), XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3(-1.8f,   0.35f,  0.0f), XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3(-0.95f,   0.35f,  0.0f), XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) },
-		{ XMFLOAT3(-0.95f,  -0.5f,  0.0f), XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) },
-	};
-	
-	Vertex verticesCircle[] = 
-	{ 
-		{ XMFLOAT3(    0.0f,     0.0f,  0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3( 0.4045f,  0.2935f,  0.0f), XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) },
-		{ XMFLOAT3( 0.1545f,  0.4755f,  0.0f), XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) },
-		{ XMFLOAT3(-0.1545f,  0.4755f,  0.0f), XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) },
-		{ XMFLOAT3(-0.4045f,  0.2935f,  0.0f), XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3(   -0.5f,	 0.0f,  0.0f), XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3(-0.4045f, -0.2935f,  0.0f), XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3(-0.1545f, -0.4755f,  0.0f), XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3( 0.1545f, -0.4755f,  0.0f), XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3( 0.4045f, -0.2935f,  0.0f), XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3(    0.5f,     0.0f,  0.0f), XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f) },
-	};
-
-	// Set up the indices, which tell us which vertices to use and in which order
-	// - This is somewhat redundant for just 3 vertices (it's a simple example)
-	// - Indices are technically not required if the vertices are in the buffer 
-	//    in the correct order and each one will be used exactly once
-	// - But just to see how it's done...
-	int indicesTriangle[] = { 0, 1, 2 };
-	int indicesSquare[] = { 0, 1, 2, 3, 0, 2 };
-	int indicesCircle[] = { 0, 2, 1, 0, 3, 2, 0, 4, 3, 0, 5, 4, 0, 6, 5, 0, 7, 6, 0, 8, 7, 0, 9, 8, 0, 10, 9, 0, 1, 10 };
-
-	// Initialize the mesh and send it to the mesh list
-
-	meshes.push_back(new Mesh(device, verticesTriangle, indicesTriangle, 3));
-	meshes.push_back(new Mesh(device, verticesSquare, indicesSquare, 6));
-	meshes.push_back(new Mesh(device, verticesCircle, indicesCircle, 30));
-	*/
 }
 
 // --------------------------------------------------------
@@ -212,21 +185,7 @@ void Game::Update(float deltaTime, float totalTime)
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
 
-	/*
-	// Assignment 3
-	// Make a circle in the center that rotates
-	float sinTime = 2.0f +  sin(totalTime * 5.0f) / 5.0f;
-	float radius = sinTime + 1.0f;
-
-	entities[0]->SetRotation(XMFLOAT3(0, 0, -totalTime * 0.5f));
-	entities[0]->SetScale(XMFLOAT3(2, 2, 2));
-
-	// Make a bunch of triangles that revolve around the circle
-	for (int i = 1; i < entities.size(); i++) {
-		entities[i]->SetScale(XMFLOAT3(0.05f * i, 0.05f * i, 0.05f * i));
-		entities[i]->SetRotation(XMFLOAT3(0, 0, -totalTime * 0.5f + (i * 10)));
-		entities[i]->SetPosition(XMFLOAT3(sin(totalTime * 0.75f + (i * 0.15f)) * 2.0f, 0, cos(totalTime * 0.75f + (i * 0.15f)) * 2.0f));
-	}*/
+	//if(prevMousePos.y > (float))
 
 	//rotate the helix that exists in entities
 	entities[0]->SetRotation(XMFLOAT3(0, totalTime * 0.5f, 0));
@@ -271,6 +230,40 @@ void Game::Update(float deltaTime, float totalTime)
 		newPosition.z = worldBounds[cameraCurBox]->VectorToEdge(newPosition).z;
 		GameCamera->TranslateTo(newPosition.x, 0.0f, newPosition.z);
 	}
+	float distance = sqrt(
+		pow((GameCamera->GetPosition().x - entities[0]->GetPosition().x), 2)
+		+ pow((GameCamera->GetPosition().z - entities[0]->GetPosition().z), 2));
+	canRate = false;
+	if (distance < 4) {
+		canRate = true;
+		DoStars();
+	}
+}
+
+//calculate stars for game rating system
+void Game::DoStars()
+{
+	starRating = -1;
+	if (currentStarRating != -1) return;
+	//if mouse too high then get out of there.
+	if (prevMousePos.y < (float)height * (2.0f / 3)) {
+		GUIElements[0]->SetMaterial(starMaterials[0]);
+		return;
+	}
+	
+	float left_start = (float)width / 2 - 256;
+	float right_end = (float)width / 2 + 256;
+	int increment = 512 / 5;
+
+	if (prevMousePos.x < left_start) {
+		GUIElements[0]->SetMaterial(starMaterials[0]);
+	}else if (prevMousePos.x >= right_end - 3) {
+		GUIElements[0]->SetMaterial(starMaterials[5]);
+	}else {
+		starRating = (int)((prevMousePos.x - left_start) / increment) + 1;
+		GUIElements[0]->SetMaterial(starMaterials[starRating]);
+	}
+	
 }
 
 // --------------------------------------------------------
@@ -299,9 +292,13 @@ void Game::Draw(float deltaTime, float totalTime)
 		entities[i]->GetMaterial()->GetPixelShader()->SetData("light", &light, sizeof(DirectionalLight));
 		entities[i]->Render(GameCamera->GetView(), GameCamera->GetProjection());
 	}
-	for (int i = 0; i < entities.size(); i++) {
-		GUIElements[i]->GetMaterial()->GetPixelShader()->SetData("light", &fullBright, sizeof(DirectionalLight));
-		GUIElements[i]->Render(GUICamera->GetView(), GUICamera->GetProjection());
+	
+
+	if (canRate) {
+		for (int i = 0; i < GUIElements.size(); i++) {
+			GUIElements[i]->GetMaterial()->GetPixelShader()->SetData("light", &fullBright, sizeof(DirectionalLight));
+			GUIElements[i]->Render(GUICamera->GetView(), GUICamera->GetProjection());
+		}
 	}
 
 	// Present the back buffer to the user
@@ -319,6 +316,10 @@ void Game::Draw(float deltaTime, float totalTime)
 // --------------------------------------------------------
 void Game::OnMouseDown(WPARAM buttonState, int x, int y)
 {
+	if (canRate && starRating != -1) {
+		currentStarRating = starRating;
+		GUIElements[0]->SetMaterial(starMaterials[currentStarRating]);
+	}
 	// Add any custom code here...
 
 	// Save the previous mouse position, so we have it for the future

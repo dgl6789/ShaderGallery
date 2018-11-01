@@ -51,3 +51,13 @@ DirectX::XMFLOAT3 BoundingBox::VectorToEdge(DirectX::XMFLOAT3 point)
 
 	return response;
 }
+
+XMFLOAT2 BoundingBox::GetCenter()
+{
+	return center;
+}
+
+XMFLOAT2 BoundingBox::GetHalfSize()
+{
+	return halfSize;
+}
