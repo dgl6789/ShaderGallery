@@ -290,6 +290,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	//    have different geometry.
 	for (int i = 0; i < entities.size(); i++) {
 		entities[i]->GetMaterial()->GetPixelShader()->SetData("light", &light, sizeof(DirectionalLight));
+		entities[i]->GetMaterial()->GetPixelShader()->SetFloat3("cameraPosition", GameCamera->GetPosition());
 		entities[i]->Render(GameCamera->GetView(), GameCamera->GetProjection());
 	}
 	
@@ -297,6 +298,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	if (canRate) {
 		for (int i = 0; i < GUIElements.size(); i++) {
 			GUIElements[i]->GetMaterial()->GetPixelShader()->SetData("light", &fullBright, sizeof(DirectionalLight));
+			entities[i]->GetMaterial()->GetPixelShader()->SetFloat3("cameraPosition", GUICamera->GetPosition());
 			GUIElements[i]->Render(GUICamera->GetView(), GUICamera->GetProjection());
 		}
 	}

@@ -1,11 +1,13 @@
-﻿  Game.cpp
-  Generating Code...
-  Compiling...
-  Main.cpp
-  Generating Code...
-  Skipping... (no relevant changes detected)
-  Mesh.cpp
-  Material.cpp
-  Entity.cpp
+﻿  compilation object save succeeded; see Z:\IGMProfile\Repositories\ShaderGallery\x64\Debug\PixelShader.cso
+  compilation object save succeeded; see Z:\IGMProfile\Repositories\ShaderGallery\x64\Debug\VertexShader.cso
+  BoundingBox.cpp
   Camera.cpp
-  ShaderGallery.vcxproj -> C:\Users\Noah Wil5on\Documents\RIT Work\4_01\GGP\ShaderGallery\x64\Debug\ShaderGallery.exe
+  DXCore.cpp
+  Entity.cpp
+  Game.cpp
+  Main.cpp
+  Material.cpp
+  Mesh.cpp
+  SimpleShader.cpp
+  Generating Code...
+  ShaderGallery.vcxproj -> Z:\IGMProfile\Repositories\ShaderGallery\x64\Debug\ShaderGallery.exe
