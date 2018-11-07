@@ -4,7 +4,8 @@ Material::Material(SimpleVertexShader * pVertexShader, SimplePixelShader * pPixe
 {
 	SetVertexShader(pVertexShader);
 	SetPixelShader(pPixelShader);
-	srv = 0;
+	texture = 0;
+	specularMap = 0;
 	sampleState = 0;
 	sampleDescription = 0;
 }
@@ -14,7 +15,7 @@ Material::~Material()
 	delete vertexShader;
 	delete pixelShader;
 	delete sampleDescription;
-	srv->Release();
+	texture->Release();
 	sampleState->Release();
 }
 
@@ -22,7 +23,9 @@ SimpleVertexShader * Material::GetVertexShader() { return vertexShader; }
 
 SimplePixelShader * Material::GetPixelShader() { return pixelShader; }
 
-ID3D11ShaderResourceView * Material::GetSRV() { return srv; }
+ID3D11ShaderResourceView * Material::GetTexture() { return texture; }
+
+ID3D11ShaderResourceView * Material::GetSpecularMap() {	return specularMap; }
 
 ID3D11SamplerState * Material::GetSampleState() { return sampleState; }
 
@@ -49,5 +52,10 @@ void Material::SetTexture(ID3D11Device * device, ID3D11DeviceContext * context, 
 
 	device->CreateSamplerState(sampleDescription, &sampleState);
 
-	CreateWICTextureFromFile(device, context, fileName, 0, &srv);
+	CreateWICTextureFromFile(device, context, fileName, 0, &texture);
+}
+
+void Material::SetSpecularMap(ID3D11Device * device, ID3D11DeviceContext * context, wchar_t * fileName)
+{
+	CreateWICTextureFromFile(device, context, fileName, 0, &specularMap);
 }
