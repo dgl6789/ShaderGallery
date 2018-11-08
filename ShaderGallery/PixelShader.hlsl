@@ -53,15 +53,10 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float3 lightDir = normalize(-light.Direction);
 	float NdotL = dot(input.normal, lightDir);
 
-	float4 specColor = float4(0, 0, 0, 0);
-
-	/*
-	if (specularMap != 0) {
-		float3 reflection = reflect(lightDir, input.normal);
-		float3 dirToCamera = normalize(cameraPosition - input.worldPos);
-		float specAmt = pow(saturate(dot(reflection, dirToCamera)), 64.0f);
-		specColor = specularMap.Sample(basicSampler, input.uv) * specAmt;
-	}*/
+	float3 reflection = reflect(lightDir, input.normal);
+	float3 dirToCamera = normalize(cameraPosition - input.worldPos);
+	float specAmt = pow(saturate(dot(reflection, dirToCamera)), 64.0f);
+	float4 specColor = specularMap.Sample(basicSampler, input.uv) * specAmt;
 
 	NdotL = saturate(NdotL);
 

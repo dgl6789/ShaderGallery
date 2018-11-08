@@ -122,16 +122,20 @@ void Game::Init()
 //   data to individual variables on the GPU
 // --------------------------------------------------------
 void Game::LoadMaterials() {
+	//IT IS NECESSARY FOR ALL MATERIALS TO CALL THE SetSpecularMap(); METHOD
+	//IF NO SPECULAR MAP EXISTS FOR A MATERIAL, SET IT USING THE NO_SPEC.png FILE WITHIN THE TEXTURES FOLDER
 
 	// Lava Texture
 	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
 	materials[0]->SetTexture(device, context, L"../../Assets/Textures/Lava_005_COLOR.jpg");
+	materials[0]->SetSpecularMap(device, context, L"../../Assets/Textures/NO_SPEC.png");
 	materials[0]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 	materials[0]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 
 	// Panel Texture
 	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
 	materials[1]->SetTexture(device, context, L"../../Assets/Textures/panel_normal.png");
+	materials[1]->SetSpecularMap(device, context, L"../../Assets/Textures/NO_SPEC.png");
 	materials[1]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 	materials[1]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 
