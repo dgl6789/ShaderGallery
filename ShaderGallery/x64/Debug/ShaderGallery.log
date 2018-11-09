@@ -1,13 +1,2 @@
-﻿  compilation object save succeeded; see Z:\IGMProfile\Repositories\ShaderGallery\x64\Debug\PixelShader.cso
-  compilation object save succeeded; see Z:\IGMProfile\Repositories\ShaderGallery\x64\Debug\VertexShader.cso
-  BoundingBox.cpp
-  Camera.cpp
-  DXCore.cpp
-  Entity.cpp
-  Game.cpp
-  Main.cpp
-  Material.cpp
-  Mesh.cpp
-  SimpleShader.cpp
-  Generating Code...
-  ShaderGallery.vcxproj -> Z:\IGMProfile\Repositories\ShaderGallery\x64\Debug\ShaderGallery.exe
+﻿  Game.cpp
+  ShaderGallery.vcxproj -> C:\Users\Thunder Hammer\Repositories\ShaderGallery\x64\Debug\ShaderGallery.exe

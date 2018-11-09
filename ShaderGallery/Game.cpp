@@ -138,7 +138,7 @@ void Game::LoadMaterials() {
 	materials[1]->SetSpecularMap(device, context, L"../../Assets/Textures/NO_SPEC.png");
 	materials[1]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 	materials[1]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
-
+	
 	//loop through all the ui star materials
 	for (int i = 0; i < 6; i++) {
 		starMaterials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
@@ -149,6 +149,7 @@ void Game::LoadMaterials() {
 		w_file += L".png";
 
 		starMaterials[i]->SetTexture(device, context, &w_file[0]);
+		starMaterials[i]->SetSpecularMap(device, context, L"../../Assets/Textures/NO_SPEC.png");
 		starMaterials[i]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 		starMaterials[i]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 	}

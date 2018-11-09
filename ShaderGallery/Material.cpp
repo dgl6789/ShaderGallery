@@ -16,6 +16,7 @@ Material::~Material()
 	delete pixelShader;
 	delete sampleDescription;
 	texture->Release();
+	specularMap->Release();
 	sampleState->Release();
 }
 
