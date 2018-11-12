@@ -29,6 +29,8 @@ public:
 	XMFLOAT4X4 GetView() { return viewMatrix; }
 	XMFLOAT4X4 GetProjection() { return projMatrix; }
 
+	void SetPosition(XMFLOAT3 newPosition);
+
 	// Properties
 	float mouseSensitivity = 0.005f;
 	float GetMouseSensitivity() { return mouseSensitivity; }

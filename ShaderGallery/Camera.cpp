@@ -113,3 +113,8 @@ void Camera::MakeGUI()
 	XMStoreFloat4x4(&projMatrix, XMMatrixTranspose(XMMatrixOrthographicOffCenterLH(0.0f, 1920.0f, 0.0f, 1080.0f, 0.0f, 100.0f)));
 	GUI = true;
 }
+
+void Camera::SetPosition(XMFLOAT3 newPosition)
+{
+	position = newPosition;
+}

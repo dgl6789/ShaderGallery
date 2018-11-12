@@ -230,6 +230,12 @@ void Game::Update(float deltaTime, float totalTime)
 		newPosition.z = worldBounds[cameraCurBox]->VectorToEdge(newPosition).z;
 		GameCamera->TranslateTo(newPosition.x, 0.0f, newPosition.z);
 	}
+	XMFLOAT3 newestPosition;
+	XMStoreFloat3(&newestPosition, DirectX::XMVectorLerp(XMLoadFloat3(&prevPosition), XMLoadFloat3(&GameCamera->GetPosition()), .5f));
+
+	GameCamera->SetPosition(newestPosition);
+
+
 	float distance = sqrt(
 		pow((GameCamera->GetPosition().x - entities[0]->GetPosition().x), 2)
 		+ pow((GameCamera->GetPosition().z - entities[0]->GetPosition().z), 2));
@@ -306,6 +312,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	//  - Do this exactly ONCE PER FRAME (always at the very end of the frame)
 	swapChain->Present(0, 0);
 }
+
 
 #pragma region Mouse Input
 
