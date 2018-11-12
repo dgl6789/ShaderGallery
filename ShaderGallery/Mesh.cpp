@@ -14,7 +14,7 @@ Mesh::Mesh(ID3D11Device * pDevice, char * fileName)
 	std::vector<XMFLOAT3> normals;       // Normals from the file
 	std::vector<XMFLOAT2> uvs;           // UVs from the file
 	std::vector<Vertex> verts;           // Verts we're assembling
-	std::vector<int> indices;           // Indices of these verts
+	std::vector<UINT> indices;           // Indices of these verts
 	unsigned int vertCounter = 0;        // Count of vertices/indices
 	char chars[100];                     // String for line reading
 
@@ -81,16 +81,19 @@ Mesh::Mesh(ID3D11Device * pDevice, char * fileName)
 			v1.Position = positions[i[0] - 1];
 			v1.UV = uvs[i[1] - 1];
 			v1.Normal = normals[i[2] - 1];
+			//v1.Tangent = XMFLOAT3(0, 0, 0);
 
 			Vertex v2;
 			v2.Position = positions[i[3] - 1];
 			v2.UV = uvs[i[4] - 1];
 			v2.Normal = normals[i[5] - 1];
+			//v2.Tangent = XMFLOAT3(0, 0, 0);
 
 			Vertex v3;
 			v3.Position = positions[i[6] - 1];
 			v3.UV = uvs[i[7] - 1];
 			v3.Normal = normals[i[8] - 1];
+			//v3.Tangent = XMFLOAT3(0, 0, 0);
 
 			// The model is most likely in a right-handed space,
 			// especially if it came from Maya.  We want to convert
@@ -164,23 +167,12 @@ Mesh::Mesh(ID3D11Device * pDevice, char * fileName)
 	device = pDevice;
 	numVertices = vertCounter;
 
-	InitIndexBuffer(CreateBufferDescription(D3D11_BIND_INDEX_BUFFER, numVertices * sizeof(int)), &indices[0]);
-	InitVertexBuffer(CreateBufferDescription(D3D11_BIND_VERTEX_BUFFER, numVertices * sizeof(Vertex)), &verts[0]);
+	//CalculateTangents(&verts[0], numVertices, &indices[0], numVertices);
+
+	CreateBuffers(&verts[0], vertCounter, &indices[0], vertCounter, device);
 }
 
 /// Mesh constructor takes arrays of vertices and indices,
-/// and sets up a buffer for each.
-Mesh::Mesh(ID3D11Device* pDevice, Vertex* vertices, int* indices, int pNumVertices) {
-	// Initialize buffer fields
-	vertexBuffer = 0;
-	indexBuffer = 0;
-
-	device = pDevice;
-	numVertices = pNumVertices;
-
-	InitIndexBuffer(CreateBufferDescription(D3D11_BIND_INDEX_BUFFER, numVertices * sizeof(int)), indices);
-	InitVertexBuffer(CreateBufferDescription(D3D11_BIND_VERTEX_BUFFER, numVertices * sizeof(Vertex)), vertices);
-}
 
 /// Clean up the buffers
 Mesh::~Mesh() {
@@ -189,41 +181,107 @@ Mesh::~Mesh() {
 	if (indexBuffer) { indexBuffer->Release(); }
 }
 
-/// Create the buffer description to use when initializing this mesh's buffer objects.
-/// Returns the created buffer.
-D3D11_BUFFER_DESC Mesh::CreateBufferDescription(D3D11_BIND_FLAG pBindFlags, UINT pByteWidth) {
-	// Create the buffer description ------------------------------------
-	// - The description is created on the stack because we only need
-	//    it to create the buffer.  The description is then useless.
-	D3D11_BUFFER_DESC bd;
-	bd.Usage = D3D11_USAGE_IMMUTABLE;									
-	bd.ByteWidth = pByteWidth;			// number of indices in the buffer
-	bd.BindFlags = pBindFlags;							// Tells DirectX this is an buffer of the type specified in the params for this method.
-	bd.CPUAccessFlags = 0;
-	bd.MiscFlags = 0;
-	bd.StructureByteStride = 0;
+void Mesh::CreateBuffers(Vertex* vertArray, int numVerts, unsigned int* indexArray, int numIndices, ID3D11Device* device)
+{
 
-	return bd;
+	// Create the vertex buffer
+	D3D11_BUFFER_DESC vbd;
+	vbd.Usage = D3D11_USAGE_IMMUTABLE;
+	vbd.ByteWidth = sizeof(Vertex) * numVerts; // Number of vertices
+	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vbd.CPUAccessFlags = 0;
+	vbd.MiscFlags = 0;
+	vbd.StructureByteStride = 0;
+	D3D11_SUBRESOURCE_DATA initialVertexData;
+	initialVertexData.pSysMem = vertArray;
+	device->CreateBuffer(&vbd, &initialVertexData, &vertexBuffer);
+
+	// Create the index buffer
+	D3D11_BUFFER_DESC ibd;
+	ibd.Usage = D3D11_USAGE_IMMUTABLE;
+	ibd.ByteWidth = sizeof(unsigned int) * numIndices; // Number of indices
+	ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	ibd.CPUAccessFlags = 0;
+	ibd.MiscFlags = 0;
+	ibd.StructureByteStride = 0;
+	D3D11_SUBRESOURCE_DATA initialIndexData;
+	initialIndexData.pSysMem = indexArray;
+	device->CreateBuffer(&ibd, &initialIndexData, &indexBuffer);
+
+	// Save the indices
+	//this->numIndices = numIndices;
 }
 
-/// Initialize the vertex buffer.
-/// Returns S_OK if successful. Saves off the buffer into &pVertexArray.
-HRESULT Mesh::InitVertexBuffer(D3D11_BUFFER_DESC pBufferDesc, Vertex* pVertexArray) {
-	// Create the proper struct to hold the initial vertex data
-	// - This is how we put the initial data into the buffer
-	D3D11_SUBRESOURCE_DATA lInitialVertexData;
-	lInitialVertexData.pSysMem = pVertexArray;
+// Calculates the tangents of the vertices in a mesh
+// Code adapted from: http://www.terathon.com/code/tangent.html
+void Mesh::CalculateTangents(Vertex * verts, int numVerts, int * indices, int numIndices)
+{
+	// Reset tangents
+	for (int i = 0; i < numVerts; i++)
+	{
+		//verts[i].Tangent = XMFLOAT3(0, 0, 0);
+	}
 
-	return device->CreateBuffer(&pBufferDesc, &lInitialVertexData, &vertexBuffer);
-}
+	/*// Calculate tangents one whole triangle at a time
+	for (int i = 0; i < numVerts;)
+	{
+		// Grab indices and vertices of first triangle
+		unsigned int i1 = indices[i++];
+		unsigned int i2 = indices[i++];
+		unsigned int i3 = indices[i++];
+		Vertex* v1 = &verts[i1];
+		Vertex* v2 = &verts[i2];
+		Vertex* v3 = &verts[i3];
 
-/// Initialize the vertex buffer.
-/// Returns S_OK if successful. Saves off the buffer into &pIndexArray.
-HRESULT Mesh::InitIndexBuffer(D3D11_BUFFER_DESC pBufferDesc, int* pIndexArray) {
-	// Create the proper struct to hold the initial vertex data
-	// - This is how we put the initial data into the buffer
-	D3D11_SUBRESOURCE_DATA lIinitialIndexData;
-	lIinitialIndexData.pSysMem = pIndexArray;
+		// Calculate vectors relative to triangle positions
+		float x1 = v2->Position.x - v1->Position.x;
+		float y1 = v2->Position.y - v1->Position.y;
+		float z1 = v2->Position.z - v1->Position.z;
 
-	return device->CreateBuffer(&pBufferDesc, &lIinitialIndexData, &indexBuffer);
+		float x2 = v3->Position.x - v1->Position.x;
+		float y2 = v3->Position.y - v1->Position.y;
+		float z2 = v3->Position.z - v1->Position.z;
+
+		// Do the same for vectors relative to triangle uv's
+		float s1 = v2->UV.x - v1->UV.x;
+		float t1 = v2->UV.y - v1->UV.y;
+
+		float s2 = v3->UV.x - v1->UV.x;
+		float t2 = v3->UV.y - v1->UV.y;
+
+		// Create vectors for tangent calculation
+		float r = 1.0f / (s1 * t2 - s2 * t1);
+
+		float tx = (t2 * x1 - t1 * x2) * r;
+		float ty = (t2 * y1 - t1 * y2) * r;
+		float tz = (t2 * z1 - t1 * z2) * r;
+
+		// Adjust tangents of each vert of the triangle
+		v1->Tangent.x += tx;
+		v1->Tangent.y += ty;
+		v1->Tangent.z += tz;
+
+		v2->Tangent.x += tx;
+		v2->Tangent.y += ty;
+		v2->Tangent.z += tz;
+
+		v3->Tangent.x += tx;
+		v3->Tangent.y += ty;
+		v3->Tangent.z += tz;
+	}
+
+	// Ensure all of the tangents are orthogonal to the normals
+	for (int i = 0; i < numVerts; i++)
+	{
+		// Grab the two vectors
+		XMVECTOR normal = XMLoadFloat3(&verts[i].Normal);
+		XMVECTOR tangent = XMLoadFloat3(&verts[i].Tangent);
+
+		// Use Gram-Schmidt orthogonalize
+		tangent = XMVector3Normalize(
+			tangent - normal * XMVector3Dot(normal, tangent));
+
+		// Store the tangent
+		XMStoreFloat3(&verts[i].Tangent, tangent);
+	}*/
 }

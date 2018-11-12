@@ -17,6 +17,7 @@ Material::~Material()
 	delete sampleDescription;
 	texture->Release();
 	specularMap->Release();
+	normalMap->Release();
 	sampleState->Release();
 }
 
@@ -27,6 +28,8 @@ SimplePixelShader * Material::GetPixelShader() { return pixelShader; }
 ID3D11ShaderResourceView * Material::GetTexture() { return texture; }
 
 ID3D11ShaderResourceView * Material::GetSpecularMap() {	return specularMap; }
+
+ID3D11ShaderResourceView * Material::GetNormalMap() { return normalMap; }
 
 ID3D11SamplerState * Material::GetSampleState() { return sampleState; }
 
@@ -59,4 +62,9 @@ void Material::SetTexture(ID3D11Device * device, ID3D11DeviceContext * context, 
 void Material::SetSpecularMap(ID3D11Device * device, ID3D11DeviceContext * context, wchar_t * fileName)
 {
 	CreateWICTextureFromFile(device, context, fileName, 0, &specularMap);
+}
+
+void Material::SetNormalMap(ID3D11Device * device, ID3D11DeviceContext * context, wchar_t * fileName)
+{
+	CreateWICTextureFromFile(device, context, fileName, 0, &normalMap);
 }

@@ -24,9 +24,10 @@ struct VertexShaderInput
 	//  |   Name          Semantic
 	//  |    |                |
 	//  v    v                v
-	float3 position		: POSITION;     // XYZ position
-	float3 normal		: NORMAL;       // XYZ normal direction
-	float2 uv			: TEXCOORD;		// UV position
+	float3 position		: POSITION;
+	float2 uv			: TEXCOORD;
+	float3 normal		: NORMAL;
+	float3 tangent		: TANGENT;
 };
 
 // Struct representing the data we're sending down the pipeline
@@ -43,6 +44,7 @@ struct VertexToPixel
 	//  v    v                v
 	float4 position		: SV_POSITION;	// XYZW position (System Value Position)
 	float3 normal		: NORMAL;		// XYZ normal direction
+	float3 tangent		: TANGENT;		
 	float3 worldPos		: POSITION;
 	float2 uv			: TEXCOORD;		// UV location
 };
@@ -80,6 +82,7 @@ VertexToPixel main( VertexShaderInput input )
 
 	// Pass the normal through, transformed properly
 	output.normal = mul(input.normal, (float3x3)world);
+	//output.tangent = mul(input.tangent, (float3x3)world);
 
 	// Pass the uv through
 	output.uv = input.uv;

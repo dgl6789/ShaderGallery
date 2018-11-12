@@ -9,14 +9,10 @@
 class Mesh {
 public:
 	Mesh(ID3D11Device* pDevice, char* fileName);
-	Mesh(ID3D11Device* pDevice, Vertex* vertices, int* indices, int pNumVertices);
 	~Mesh();
 
 	// Methods to set up the buffers this mesh needs to render.
-	D3D11_BUFFER_DESC CreateBufferDescription(D3D11_BIND_FLAG pBindFlags, UINT pByteWidth);
-
-	HRESULT InitVertexBuffer(D3D11_BUFFER_DESC pBufferDesc, Vertex* pVertexArray);
-	HRESULT InitIndexBuffer(D3D11_BUFFER_DESC pBufferDesc, int* pIndexArray);
+	void CreateBuffers(Vertex* vertArray, int numVerts, unsigned int* indexArray, int numIndices, ID3D11Device* device);
 
 	// Buffers to hold actual data
 	ID3D11Buffer* vertexBuffer;
@@ -27,6 +23,7 @@ public:
 	int numVertices;
 
 private:
+	void CalculateTangents(Vertex * verts, int numVerts, int * indices, int numIndices);
 	// DX Device
 	ID3D11Device* device;
 };

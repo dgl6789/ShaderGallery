@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-﻿
-=======
-﻿  Game.cpp
-  ShaderGallery.vcxproj -> C:\Users\Thunder Hammer\Repositories\ShaderGallery\x64\Debug\ShaderGallery.exe
->>>>>>> cf0db34c614799809f418d4ecd40ccb16dd1987f
+﻿  compilation object save succeeded; see C:\Users\Noah Wil5on\Documents\RIT Work\4_01\GGP\ShaderGallery\x64\Debug\PixelShader.cso
+  Game.cpp
+  ShaderGallery.vcxproj -> C:\Users\Noah Wil5on\Documents\RIT Work\4_01\GGP\ShaderGallery\x64\Debug\ShaderGallery.exe

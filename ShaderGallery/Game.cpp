@@ -128,14 +128,16 @@ void Game::LoadMaterials() {
 	// Lava Texture
 	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
 	materials[0]->SetTexture(device, context, L"../../Assets/Textures/Lava_005_COLOR.jpg");
-	materials[0]->SetSpecularMap(device, context, L"../../Assets/Textures/NO_SPEC.png");
+	materials[0]->SetSpecularMap(device, context, L"../../Assets/Textures/spec.jpg");
+	materials[0]->SetNormalMap(device, context, L"../../Assets/Textures/panel_normal.png");
 	materials[0]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 	materials[0]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 
 	// Panel Texture
 	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
 	materials[1]->SetTexture(device, context, L"../../Assets/Textures/panel_normal.png");
-	materials[1]->SetSpecularMap(device, context, L"../../Assets/Textures/NO_SPEC.png");
+	materials[1]->SetSpecularMap(device, context, L"../../Assets/Textures/spec.jpg");
+	materials[1]->SetNormalMap(device, context, L"../../Assets/Textures/panel_normal.png");
 	materials[1]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 	materials[1]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 	
@@ -150,6 +152,7 @@ void Game::LoadMaterials() {
 
 		starMaterials[i]->SetTexture(device, context, &w_file[0]);
 		starMaterials[i]->SetSpecularMap(device, context, L"../../Assets/Textures/NO_SPEC.png");
+		starMaterials[i]->SetNormalMap(device, context, L"../../Assets/Textures/panel_normal.png");
 		starMaterials[i]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 		starMaterials[i]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 	}
@@ -193,7 +196,7 @@ void Game::Update(float deltaTime, float totalTime)
 	//if(prevMousePos.y > (float))
 
 	//rotate the helix that exists in entities
-	entities[0]->SetRotation(XMFLOAT3(0, totalTime * 0.5f, 0));
+	//entities[0]->SetRotation(XMFLOAT3(0, totalTime * 0.5f, 0));
 	GUIElements[0]->SetPosition(XMFLOAT3((float)width / (2 * 100), 1, 2));
 
 	// Movement
