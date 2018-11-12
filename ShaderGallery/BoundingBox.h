@@ -10,15 +10,15 @@ using namespace DirectX;
 class BoundingBox
 {
 public:
-	BoundingBox(DirectX::XMFLOAT2 center, DirectX::XMFLOAT2 halfSize);
+	BoundingBox(DirectX::XMFLOAT3 center, DirectX::XMFLOAT3 halfSize);
 	~BoundingBox();
 
 	bool PointInside(DirectX::XMFLOAT3 point);
 	DirectX::XMFLOAT3 VectorToEdge(DirectX::XMFLOAT3 point);
-	XMFLOAT2 GetCenter();
-	XMFLOAT2 GetHalfSize();
+	XMFLOAT3 GetCenter();
+	XMFLOAT3 GetHalfSize();
 
 private:
-	DirectX::XMFLOAT2 center;
-	DirectX::XMFLOAT2 halfSize;
+	DirectX::XMFLOAT3 center;
+	DirectX::XMFLOAT3 halfSize;
 };

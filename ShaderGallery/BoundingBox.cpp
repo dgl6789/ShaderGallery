@@ -1,6 +1,6 @@
 #include "BoundingBox.h"
 
-BoundingBox::BoundingBox(DirectX::XMFLOAT2 center, DirectX::XMFLOAT2 halfSize)
+BoundingBox::BoundingBox(DirectX::XMFLOAT3 center, DirectX::XMFLOAT3 halfSize)
 {
 	this->center = center;
 	this->halfSize = halfSize;
@@ -16,8 +16,8 @@ bool BoundingBox::PointInside(DirectX::XMFLOAT3 point)
 	return
 		point.x >= center.x - halfSize.x			// Point is further right than leftmost boundary
 		&& point.x <= center.x + halfSize.x			// Point is further left than rightmost boundary
-		&& point.z >= center.y - halfSize.y			// Point is further down than topmost boundary
-		&& point.z <= center.y + halfSize.y;		// Point is further up than bottommost boundary
+		&& point.z >= center.z - halfSize.z			// Point is further down than topmost boundary
+		&& point.z <= center.z + halfSize.z;		// Point is further up than bottommost boundary
 }
 
 // Return a vector pointing from a given point to the nearest edge of this box. Minimum distance.
@@ -38,26 +38,26 @@ DirectX::XMFLOAT3 BoundingBox::VectorToEdge(DirectX::XMFLOAT3 point)
 	}
 
 	// Are we above the box?
-	if (point.z < center.y - halfSize.y)
+	if (point.z < center.z - halfSize.z)
 	{
-		response.z = center.y - halfSize.y - point.z;
+		response.z = center.z - halfSize.z - point.z;
 	}
 
 	// Are we below the box?
-	else if (point.z > center.y + halfSize.y)
+	else if (point.z > center.z + halfSize.z)
 	{
-		response.z = center.y + halfSize.y - point.z;
+		response.z = center.z + halfSize.z - point.z;
 	}
 
 	return response;
 }
 
-XMFLOAT2 BoundingBox::GetCenter()
+XMFLOAT3 BoundingBox::GetCenter()
 {
 	return center;
 }
 
-XMFLOAT2 BoundingBox::GetHalfSize()
+XMFLOAT3 BoundingBox::GetHalfSize()
 {
 	return halfSize;
 }

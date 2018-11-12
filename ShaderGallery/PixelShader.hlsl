@@ -34,7 +34,7 @@ cbuffer Camera : register(b2) {
 
 Texture2D diffuseTexture : register(t0);
 Texture2D specularMap : register(t1);
-//Texture2D normalMap : register(t2);
+Texture2D normalMap : register(t2);
 SamplerState basicSampler : register(s0);
 
 // --------------------------------------------------------
@@ -49,17 +49,16 @@ SamplerState basicSampler : register(s0);
 float4 main(VertexToPixel input) : SV_TARGET
 {
 	input.normal = normalize(input.normal);
-	//input.tangent = normalize(input.tangent);
+	input.tangent = normalize(input.tangent);
 
 	float4 surfaceColor = diffuseTexture.Sample(basicSampler, input.uv);
-	//float3 normalFromMap = normalMap.Sample(basicSampler, input.uv).rgb * 2 - 1;
+	float3 normalFromMap = normalMap.Sample(basicSampler, input.uv).rgb * 2 - 1;
 
-	// Create my TBN matrix to convert from tangent-space to world-space
-	//float3 N = input.normal;
-	//float3 T = normalize(input.tangent - N * dot(input.tangent, N)); // Ensure tangent is 90 degrees from normal
-	//float3 B = cross(T, N);
-	//float3x3 TBN = float3x3(T, B, N);
-
+	// normal map calculations
+	float3 N = input.normal;
+	float3 T = normalize(input.tangent - N * dot(input.tangent, N)); // Ensure tangent is 90 degrees from normal
+	float3 B = cross(T, N);
+	float3x3 TBN = float3x3(T, B, N);
 	//input.normal = normalize(mul(normalFromMap, TBN));
 	
 	float3 lightDir = normalize(-light.Direction);

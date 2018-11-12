@@ -82,7 +82,7 @@ VertexToPixel main( VertexShaderInput input )
 
 	// Pass the normal through, transformed properly
 	output.normal = mul(input.normal, (float3x3)world);
-	//output.tangent = mul(input.tangent, (float3x3)world);
+	output.tangent = mul(input.tangent, (float3x3)world);
 
 	// Pass the uv through
 	output.uv = input.uv;

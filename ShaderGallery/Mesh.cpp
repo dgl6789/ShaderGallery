@@ -219,10 +219,10 @@ void Mesh::CalculateTangents(Vertex * verts, int numVerts, int * indices, int nu
 	// Reset tangents
 	for (int i = 0; i < numVerts; i++)
 	{
-		//verts[i].Tangent = XMFLOAT3(0, 0, 0);
+		verts[i].Tangent = XMFLOAT3(0, 0, 0);
 	}
 
-	/*// Calculate tangents one whole triangle at a time
+	// Calculate tangents one whole triangle at a time
 	for (int i = 0; i < numVerts;)
 	{
 		// Grab indices and vertices of first triangle
@@ -283,5 +283,5 @@ void Mesh::CalculateTangents(Vertex * verts, int numVerts, int * indices, int nu
 
 		// Store the tangent
 		XMStoreFloat3(&verts[i].Tangent, tangent);
-	}*/
+	}
 }

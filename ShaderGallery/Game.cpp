@@ -73,7 +73,7 @@ void Game::Init()
 	
 
 	// Game Objects
-	meshes.push_back(new Mesh(device, "../../Assets/Models/helix.obj"));
+	meshes.push_back(new Mesh(device, "../../Assets/Models/sphere.obj"));
 	meshes.push_back(new Mesh(device, "../../Assets/Models/cube_inverted.obj"));
 
 	//GUI Mesh
@@ -136,7 +136,7 @@ void Game::LoadMaterials() {
 	// Panel Texture
 	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
 	materials[1]->SetTexture(device, context, L"../../Assets/Textures/panel_normal.png");
-	materials[1]->SetSpecularMap(device, context, L"../../Assets/Textures/spec.jpg");
+	materials[1]->SetSpecularMap(device, context, L"../../Assets/Textures/NO_SPEC.png");
 	materials[1]->SetNormalMap(device, context, L"../../Assets/Textures/panel_normal.png");
 	materials[1]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 	materials[1]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
@@ -196,7 +196,7 @@ void Game::Update(float deltaTime, float totalTime)
 	//if(prevMousePos.y > (float))
 
 	//rotate the helix that exists in entities
-	//entities[0]->SetRotation(XMFLOAT3(0, totalTime * 0.5f, 0));
+	entities[0]->SetRotation(XMFLOAT3(0, totalTime * 0.5f, 0));
 	GUIElements[0]->SetPosition(XMFLOAT3((float)width / (2 * 100), 1, 2));
 
 	// Movement
