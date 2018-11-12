@@ -122,19 +122,23 @@ void Game::Init()
 //   data to individual variables on the GPU
 // --------------------------------------------------------
 void Game::LoadMaterials() {
+	//IT IS NECESSARY FOR ALL MATERIALS TO CALL THE SetSpecularMap(); METHOD
+	//IF NO SPECULAR MAP EXISTS FOR A MATERIAL, SET IT USING THE NO_SPEC.png FILE WITHIN THE TEXTURES FOLDER
 
 	// Lava Texture
 	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
 	materials[0]->SetTexture(device, context, L"../../Assets/Textures/Lava_005_COLOR.jpg");
+	materials[0]->SetSpecularMap(device, context, L"../../Assets/Textures/NO_SPEC.png");
 	materials[0]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 	materials[0]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 
 	// Panel Texture
 	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
 	materials[1]->SetTexture(device, context, L"../../Assets/Textures/panel_normal.png");
+	materials[1]->SetSpecularMap(device, context, L"../../Assets/Textures/NO_SPEC.png");
 	materials[1]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 	materials[1]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
-
+	
 	//loop through all the ui star materials
 	for (int i = 0; i < 6; i++) {
 		starMaterials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
@@ -145,6 +149,7 @@ void Game::LoadMaterials() {
 		w_file += L".png";
 
 		starMaterials[i]->SetTexture(device, context, &w_file[0]);
+		starMaterials[i]->SetSpecularMap(device, context, L"../../Assets/Textures/NO_SPEC.png");
 		starMaterials[i]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 		starMaterials[i]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 	}
@@ -296,6 +301,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	//    have different geometry.
 	for (int i = 0; i < entities.size(); i++) {
 		entities[i]->GetMaterial()->GetPixelShader()->SetData("light", &light, sizeof(DirectionalLight));
+		entities[i]->GetMaterial()->GetPixelShader()->SetFloat3("cameraPosition", GameCamera->GetPosition());
 		entities[i]->Render(GameCamera->GetView(), GameCamera->GetProjection());
 	}
 	
@@ -303,6 +309,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	if (canRate) {
 		for (int i = 0; i < GUIElements.size(); i++) {
 			GUIElements[i]->GetMaterial()->GetPixelShader()->SetData("light", &fullBright, sizeof(DirectionalLight));
+			entities[i]->GetMaterial()->GetPixelShader()->SetFloat3("cameraPosition", GUICamera->GetPosition());
 			GUIElements[i]->Render(GUICamera->GetView(), GUICamera->GetProjection());
 		}
 	}

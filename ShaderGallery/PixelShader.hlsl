@@ -13,6 +13,7 @@ struct VertexToPixel
 	//  v    v                v
 	float4 position		: SV_POSITION;
 	float3 normal		: NORMAL;
+	float3 worldPos		: POSITION;
 	float2 uv			: TEXCOORD;
 };
 
@@ -26,7 +27,12 @@ cbuffer Light : register(b1) {
 	DirectionalLight light;
 };
 
+cbuffer Camera : register(b2) {
+	float3 cameraPosition;
+}
+
 Texture2D diffuseTexture : register(t0);
+Texture2D specularMap : register(t1);
 SamplerState basicSampler : register(s0);
 
 // --------------------------------------------------------
@@ -47,7 +53,12 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float3 lightDir = normalize(-light.Direction);
 	float NdotL = dot(input.normal, lightDir);
 
+	float3 reflection = reflect(lightDir, input.normal);
+	float3 dirToCamera = normalize(cameraPosition - input.worldPos);
+	float specAmt = pow(saturate(dot(reflection, dirToCamera)), 64.0f);
+	float4 specColor = specularMap.Sample(basicSampler, input.uv) * specAmt;
+
 	NdotL = saturate(NdotL);
 
-	return surfaceColor * (light.AmbientColor + (light.DiffuseColor * NdotL));
+	return surfaceColor * (light.AmbientColor + (light.DiffuseColor * NdotL) + specColor);
 }

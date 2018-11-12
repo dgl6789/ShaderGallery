@@ -10,17 +10,20 @@ public:
 
 	SimpleVertexShader* GetVertexShader();
 	SimplePixelShader* GetPixelShader();
-	ID3D11ShaderResourceView* GetSRV();
+	ID3D11ShaderResourceView* GetTexture();
+	ID3D11ShaderResourceView* GetSpecularMap();
 	ID3D11SamplerState* GetSampleState();
 	
 	void SetVertexShader(SimpleVertexShader* pVertexShader);
 	void SetPixelShader(SimplePixelShader* pPixelShader);
 	void SetTexture(ID3D11Device* device, ID3D11DeviceContext* context, wchar_t* fileName);
+	void SetSpecularMap(ID3D11Device* device, ID3D11DeviceContext* context, wchar_t* fileName);
 
 private:
 	SimpleVertexShader* vertexShader;
 	SimplePixelShader* pixelShader;
-	ID3D11ShaderResourceView* srv;
+	ID3D11ShaderResourceView* texture;
+	ID3D11ShaderResourceView* specularMap;
 	ID3D11SamplerState* sampleState;
 	D3D11_SAMPLER_DESC * sampleDescription;
 };
