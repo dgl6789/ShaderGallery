@@ -59,13 +59,13 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float3 T = normalize(input.tangent - N * dot(input.tangent, N)); // Ensure tangent is 90 degrees from normal
 	float3 B = cross(T, N);
 	float3x3 TBN = float3x3(T, B, N);
-	//input.normal = normalize(mul(normalFromMap, TBN));
+	input.normal = normalize(mul(normalFromMap, TBN));
 	
 	float3 lightDir = normalize(-light.Direction);
 	float NdotL = dot(input.normal, lightDir);
 
 	//specular calculation
-	float3 reflection = reflect(lightDir, input.normal);
+	float3 reflection = reflect(-lightDir, input.normal);
 	float3 dirToCamera = normalize(cameraPosition - input.worldPos);
 	float specAmt = pow(saturate(dot(reflection, dirToCamera)), 64.0f);
 	float4 specColor = specularMap.Sample(basicSampler, input.uv) * specAmt;

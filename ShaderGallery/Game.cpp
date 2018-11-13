@@ -91,12 +91,12 @@ void Game::Init()
 
 
 	// Define the world boundaries
-	worldBounds.push_back(new BoundingBox(XMFLOAT2(0.0f, 0.0f), XMFLOAT2(5.0f, 5.0f)));
-	worldBounds.push_back(new BoundingBox(XMFLOAT2(0.0f, 7.5f), XMFLOAT2(2.5f, 5.0f)));
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(5.0f, 0.0f, 5.0f)));
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(0.0f, 0.0f, 7.5f), XMFLOAT3(2.5f, 0.0f, 5.0f)));
 
 	//make walls "visible" by adding an inverted box to represent their dimensions
-	entities[1]->SetScale(XMFLOAT3(worldBounds[0]->GetHalfSize().x + 0.2f, 3.0f, worldBounds[0]->GetHalfSize().y + 0.2f));
-	entities[1]->SetPosition(XMFLOAT3(worldBounds[0]->GetCenter().x, 0.0f, worldBounds[0]->GetCenter().y));
+	entities[1]->SetScale(XMFLOAT3(worldBounds[0]->GetHalfSize().x + 0.2f, 3.0f, worldBounds[0]->GetHalfSize().z + 0.2f));
+	entities[1]->SetPosition(XMFLOAT3(worldBounds[0]->GetCenter().x, 0.0f, worldBounds[0]->GetCenter().z));
 
 	//entities[2]->SetScale(XMFLOAT3(worldBounds[1]->GetHalfSize().x + 0.2f, 3.0f, worldBounds[0]->GetHalfSize().y + 0.2f));
 	//entities[2]->SetPosition(XMFLOAT3(worldBounds[1]->GetCenter().x, 0.0f, worldBounds[0]->GetCenter().y));
@@ -128,15 +128,15 @@ void Game::LoadMaterials() {
 	// Lava Texture
 	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
 	materials[0]->SetTexture(device, context, L"../../Assets/Textures/Lava_005_COLOR.jpg");
-	materials[0]->SetSpecularMap(device, context, L"../../Assets/Textures/spec.jpg");
-	materials[0]->SetNormalMap(device, context, L"../../Assets/Textures/panel_normal.png");
+	materials[0]->SetSpecularMap(device, context, L"../../Assets/Textures/ALL_SPEC.png");
+	materials[0]->SetNormalMap(device, context, L"../../Assets/Textures/Lava_005_NORM.jpg");
 	materials[0]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 	materials[0]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 
 	// Panel Texture
 	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
-	materials[1]->SetTexture(device, context, L"../../Assets/Textures/panel_normal.png");
-	materials[1]->SetSpecularMap(device, context, L"../../Assets/Textures/NO_SPEC.png");
+	materials[1]->SetTexture(device, context, L"../../Assets/Textures/ALL_SPEC.png");
+	materials[1]->SetSpecularMap(device, context, L"../../Assets/Textures/ALL_SPEC.png");
 	materials[1]->SetNormalMap(device, context, L"../../Assets/Textures/panel_normal.png");
 	materials[1]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 	materials[1]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
