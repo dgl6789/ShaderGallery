@@ -39,11 +39,16 @@ public:
 	void OnMouseWheel(float wheelDelta,   int x, int y);
 
 private:
+
+	ID3D11RasterizerState * rast;
+	ID3D11BlendState* blend;
+
 	// Vector of active meshes
 	std::vector<Mesh*> meshes;
 
 	// Vector of active entities
 	std::vector<Entity*> entities;
+	std::vector<Entity*> exhibits;
 	std::vector<Entity*> GUIElements;
 
 	// Vector of materials
@@ -65,10 +70,13 @@ private:
 	void LoadMaterials();
 	void CreateBasicGeometry();
 	void DoStars();
+	void DoExhibits();
 
 	int starRating = -1;
 	int currentStarRating = -1;
+	int currentExhibit;
 	bool canRate = false;
+	bool isRating = false;
 
 	// Keeps track of the old mouse position.  Useful for 
 	// determining how far the mouse moved in a single frame.

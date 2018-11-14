@@ -53,9 +53,12 @@ Game::~Game()
 	for (auto& m : materials) delete m;
 	for (auto& m : starMaterials) delete m;
 	for (auto& e : entities) delete e;
+	for (auto& e : exhibits) delete e;
 	for (auto& w : worldBounds) delete w;
 	for (auto& g : GUIElements) delete g;
 
+	blend->Release();
+	rast->Release();
 	delete GameCamera;
 	delete GUICamera;
 }
@@ -75,19 +78,28 @@ void Game::Init()
 	// Game Objects
 	meshes.push_back(new Mesh(device, "../../Assets/Models/sphere.obj"));
 	meshes.push_back(new Mesh(device, "../../Assets/Models/cube_inverted.obj"));
+	meshes.push_back(new Mesh(device, "../../Assets/Models/helix.obj"));
 
 	//GUI Mesh
 	//meshes.push_back(new Mesh(device, "../../Assets/Models/cube.obj"));
 	meshes.push_back(new Mesh(device, "../../Assets/Models/plane.obj"));
 
 
-	entities.push_back(new Entity(meshes[0], materials[0], context));
+	exhibits.push_back(new Entity(meshes[0], materials[0], context));
+	exhibits[0]->SetPosition(XMFLOAT3(3,0,0));
+	exhibits.push_back(new Entity(meshes[2], materials[0], context));
+	exhibits[1]->SetPosition(XMFLOAT3(-3, 0, 0));
 	entities.push_back(new Entity(meshes[1], materials[1], context));
 	//entities.push_back(new Entity(meshes[1], materials[1], context));
 
-	GUIElements.push_back(new Entity(meshes[2], starMaterials[0], context));
+	//UI Elements
+	GUIElements.push_back(new Entity(meshes[3], starMaterials[0], context));
 	GUIElements[0]->SetRotation(XMFLOAT3(-(3.141592654f / 2), 0, 0));
 	GUIElements[0]->SetScale(XMFLOAT3(2.56f, .5f, 0.5f));
+
+	GUIElements.push_back(new Entity(meshes[3], materials[2], context));
+	GUIElements[1]->SetRotation(XMFLOAT3(-(3.141592654f / 2), 0, 0));
+	GUIElements[1]->SetScale(XMFLOAT3(389.0f / 200, 125.0f / 200, 125.0f / 200));
 
 
 	// Define the world boundaries
@@ -95,8 +107,8 @@ void Game::Init()
 	worldBounds.push_back(new BoundingBox(XMFLOAT3(0.0f, 0.0f, 7.5f), XMFLOAT3(2.5f, 0.0f, 5.0f)));
 
 	//make walls "visible" by adding an inverted box to represent their dimensions
-	entities[1]->SetScale(XMFLOAT3(worldBounds[0]->GetHalfSize().x + 0.2f, 3.0f, worldBounds[0]->GetHalfSize().z + 0.2f));
-	entities[1]->SetPosition(XMFLOAT3(worldBounds[0]->GetCenter().x, 0.0f, worldBounds[0]->GetCenter().z));
+	entities[0]->SetScale(XMFLOAT3(worldBounds[0]->GetHalfSize().x + 0.2f, 3.0f, worldBounds[0]->GetHalfSize().z + 0.2f));
+	entities[0]->SetPosition(XMFLOAT3(worldBounds[0]->GetCenter().x, 1.0f, worldBounds[0]->GetCenter().z));
 
 	//entities[2]->SetScale(XMFLOAT3(worldBounds[1]->GetHalfSize().x + 0.2f, 3.0f, worldBounds[0]->GetHalfSize().y + 0.2f));
 	//entities[2]->SetPosition(XMFLOAT3(worldBounds[1]->GetCenter().x, 0.0f, worldBounds[0]->GetCenter().y));
@@ -108,6 +120,37 @@ void Game::Init()
 	fullBright.AmbientColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	fullBright.DiffuseColor = XMFLOAT4(1, 1, 1, 1);
 	fullBright.Direction = XMFLOAT3(1, -1, 0);
+
+	/*************************************************************************/
+	// Create a rasterizer state to draw
+	// both the inside and outside of our objects
+	D3D11_RASTERIZER_DESC rd = {};
+	rd.FillMode = D3D11_FILL_SOLID;
+	rd.CullMode = D3D11_CULL_NONE; // Don't cull front or back!
+	device->CreateRasterizerState(&rd, &rast);
+
+	// Set the state
+	context->RSSetState(rast);
+
+	// Create a blend state that does basic alpha blending
+	D3D11_BLEND_DESC bd = {};
+	bd.AlphaToCoverageEnable = false;
+	bd.IndependentBlendEnable = false;
+	bd.RenderTarget[0].BlendEnable = true;
+	bd.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	bd.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	bd.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	bd.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	bd.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	bd.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	bd.RenderTarget[0].RenderTargetWriteMask =
+		D3D11_COLOR_WRITE_ENABLE_ALL;
+	device->CreateBlendState(&bd, &blend);
+
+	// Turn on the blend state
+	float factors[] = { 1,1,1,1 };
+	context->OMSetBlendState(blend, factors, 0xFFFFFFFF);
+	/*************************************************************************/
 
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
@@ -127,19 +170,27 @@ void Game::LoadMaterials() {
 
 	// Lava Texture
 	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
-	materials[0]->SetTexture(device, context, L"../../Assets/Textures/Lava_005_COLOR.jpg");
-	materials[0]->SetSpecularMap(device, context, L"../../Assets/Textures/ALL_SPEC.png");
-	materials[0]->SetNormalMap(device, context, L"../../Assets/Textures/Lava_005_NORM.jpg");
+	materials[0]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/Lava_005_COLOR.jpg");
+	materials[0]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
+	materials[0]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/Lava_005_NORM.jpg");
 	materials[0]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 	materials[0]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 
 	// Panel Texture
 	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
-	materials[1]->SetTexture(device, context, L"../../Assets/Textures/ALL_SPEC.png");
-	materials[1]->SetSpecularMap(device, context, L"../../Assets/Textures/ALL_SPEC.png");
-	materials[1]->SetNormalMap(device, context, L"../../Assets/Textures/panel_normal.png");
+	materials[1]->SetTexture(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
+	materials[1]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
+	materials[1]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/panel_normal.png");
 	materials[1]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 	materials[1]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
+
+	//Rate Texture
+	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
+	materials[2]->SetTexture(device, context, L"../../Assets/Textures/UI/rate.png");
+	materials[2]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
+	materials[2]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+	materials[2]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
+	materials[2]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 	
 	//loop through all the ui star materials
 	for (int i = 0; i < 6; i++) {
@@ -151,8 +202,8 @@ void Game::LoadMaterials() {
 		w_file += L".png";
 
 		starMaterials[i]->SetTexture(device, context, &w_file[0]);
-		starMaterials[i]->SetSpecularMap(device, context, L"../../Assets/Textures/NO_SPEC.png");
-		starMaterials[i]->SetNormalMap(device, context, L"../../Assets/Textures/panel_normal.png");
+		starMaterials[i]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/NO_SPEC.png");
+		starMaterials[i]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
 		starMaterials[i]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 		starMaterials[i]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 	}
@@ -196,8 +247,9 @@ void Game::Update(float deltaTime, float totalTime)
 	//if(prevMousePos.y > (float))
 
 	//rotate the helix that exists in entities
-	entities[0]->SetRotation(XMFLOAT3(0, totalTime * 0.5f, 0));
+	exhibits[0]->SetRotation(XMFLOAT3(0, totalTime * 0.5f, 0));
 	GUIElements[0]->SetPosition(XMFLOAT3((float)width / (2 * 100), 1, 2));
+	GUIElements[1]->SetPosition(XMFLOAT3((float)width / (2 * 100), (float)height / (2 * 100), 2));
 
 	// Movement
 	XMFLOAT3 prevPosition = GameCamera->GetPosition();	// Position before the move
@@ -243,22 +295,17 @@ void Game::Update(float deltaTime, float totalTime)
 
 	GameCamera->SetPosition(newestPosition);
 
-
-	float distance = sqrt(
-		pow((GameCamera->GetPosition().x - entities[0]->GetPosition().x), 2)
-		+ pow((GameCamera->GetPosition().z - entities[0]->GetPosition().z), 2));
-	canRate = false;
-	if (distance < 4) {
-		canRate = true;
-		DoStars();
-	}
+	DoExhibits();
 }
 
 //calculate stars for game rating system
 void Game::DoStars()
 {
+	if (!isRating) return;
 	starRating = -1;
-	if (currentStarRating != -1) return;
+	if (exhibits[currentExhibit]->GetRating() != -1) {
+		return;
+	}
 	//if mouse too high then get out of there.
 	if (prevMousePos.y < (float)height * (2.0f / 3)) {
 		GUIElements[0]->SetMaterial(starMaterials[0]);
@@ -277,7 +324,37 @@ void Game::DoStars()
 		starRating = (int)((prevMousePos.x - left_start) / increment) + 1;
 		GUIElements[0]->SetMaterial(starMaterials[starRating]);
 	}
+}
+
+void Game::DoExhibits()
+{
+	canRate = false;
+	bool isNear = false;
+
+	//cycle through exhibits and see if we're close to one
+	for (int i = 0; i < exhibits.size(); i++) {
+		float distance = sqrt(
+			pow((GameCamera->GetPosition().x - exhibits[i]->GetPosition().x), 2)
+			+ pow((GameCamera->GetPosition().z - exhibits[i]->GetPosition().z), 2));
+		if (distance < 2.5f) {
+			canRate = true;
+			isNear = true;
+			currentExhibit = i;
+			if (!isRating) {
+				int myRating = exhibits[i]->GetRating();
+				if (myRating == -1) myRating = 0;
+				GUIElements[0]->SetMaterial(starMaterials[myRating]);
+			}
+			DoStars();
+		}
+	}
+	//if not near any exhibits we cannot rate by default
+	if (!isNear) isRating = false;
 	
+	if (GetAsyncKeyState('E') & 0x8000 && canRate) {
+		isRating = true;
+		exhibits[currentExhibit]->SetRating(-1);
+	}
 }
 
 // --------------------------------------------------------
@@ -307,14 +384,32 @@ void Game::Draw(float deltaTime, float totalTime)
 		entities[i]->GetMaterial()->GetPixelShader()->SetFloat3("cameraPosition", GameCamera->GetPosition());
 		entities[i]->Render(GameCamera->GetView(), GameCamera->GetProjection());
 	}
-	
+
+	for (int i = 0; i < exhibits.size(); i++) {
+		exhibits[i]->GetMaterial()->GetPixelShader()->SetData("light", &light, sizeof(DirectionalLight));
+		exhibits[i]->GetMaterial()->GetPixelShader()->SetFloat3("cameraPosition", GameCamera->GetPosition());
+		exhibits[i]->Render(GameCamera->GetView(), GameCamera->GetProjection());
+	}
+
+	//reset depth buffer before rendering UI
+	context->ClearDepthStencilView(
+		depthStencilView,
+		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
+		1.0f,
+		0);
+
 
 	if (canRate) {
-		for (int i = 0; i < GUIElements.size(); i++) {
-			GUIElements[i]->GetMaterial()->GetPixelShader()->SetData("light", &fullBright, sizeof(DirectionalLight));
-			entities[i]->GetMaterial()->GetPixelShader()->SetFloat3("cameraPosition", GUICamera->GetPosition());
-			GUIElements[i]->Render(GUICamera->GetView(), GUICamera->GetProjection());
-		}
+		//for (int i = 0; i < GUIElements.size(); i++) {
+			GUIElements[0]->GetMaterial()->GetPixelShader()->SetData("light", &fullBright, sizeof(DirectionalLight));
+			GUIElements[0]->GetMaterial()->GetPixelShader()->SetFloat3("cameraPosition", GUICamera->GetPosition());
+			GUIElements[0]->Render(GUICamera->GetView(), GUICamera->GetProjection());
+		//}
+	}
+	if (!isRating && canRate) {
+		GUIElements[1]->GetMaterial()->GetPixelShader()->SetData("light", &fullBright, sizeof(DirectionalLight));
+		GUIElements[1]->GetMaterial()->GetPixelShader()->SetFloat3("cameraPosition", GUICamera->GetPosition());
+		GUIElements[1]->Render(GUICamera->GetView(), GUICamera->GetProjection());
 	}
 
 	// Present the back buffer to the user
@@ -333,9 +428,9 @@ void Game::Draw(float deltaTime, float totalTime)
 // --------------------------------------------------------
 void Game::OnMouseDown(WPARAM buttonState, int x, int y)
 {
-	if (canRate && starRating != -1) {
-		currentStarRating = starRating;
-		GUIElements[0]->SetMaterial(starMaterials[currentStarRating]);
+	if (canRate && starRating != -1 && isRating) {
+		exhibits[currentExhibit]->SetRating(starRating);
+		GUIElements[0]->SetMaterial(starMaterials[starRating]);
 	}
 	// Add any custom code here...
 

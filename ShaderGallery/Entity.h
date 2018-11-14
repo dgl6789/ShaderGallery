@@ -19,6 +19,9 @@ public:
 	Entity(Mesh* pMesh, Material* pMaterial, ID3D11DeviceContext* pDeviceContext);
 	~Entity();
 
+	void SetRating(int pRating);
+	int GetRating();
+
 	void SetPosition(XMFLOAT3 pNewPosition); // Set position
 	void OffsetPosition(XMFLOAT3 pOffset); // Add to current position
 	void SetActive(bool pActive); // Should this be updated/rendered?
@@ -41,6 +44,8 @@ public:
 	void Render(XMFLOAT4X4 pView, XMFLOAT4X4 pProjection); // Render the entity
 
 private:
+	int rating = -1;
+
 	bool dirty; // Does this entity's world matrix need to be updated?
 	bool active = true; // Is this a GUI element? 
 

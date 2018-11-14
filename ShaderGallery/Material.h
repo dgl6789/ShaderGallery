@@ -25,8 +25,8 @@ private:
 	SimpleVertexShader* vertexShader;
 	SimplePixelShader* pixelShader;
 	ID3D11ShaderResourceView* texture;
-	ID3D11ShaderResourceView* specularMap;
-	ID3D11ShaderResourceView* normalMap;
+	ID3D11ShaderResourceView* specularMap = nullptr;
+	ID3D11ShaderResourceView* normalMap = nullptr;
 	ID3D11SamplerState* sampleState;
 	D3D11_SAMPLER_DESC * sampleDescription;
 };

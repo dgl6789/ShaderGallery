@@ -49,6 +49,16 @@ Entity::Entity(Mesh* pMesh, Material* pMaterial, ID3D11DeviceContext* pDeviceCon
 // Mesh cleans up DX objects.
 Entity::~Entity() { }
 
+void Entity::SetRating(int pRating)
+{
+	rating = pRating;
+}
+
+int Entity::GetRating()
+{
+	return rating;
+}
+
 // Set this entity's position
 void Entity::SetPosition(XMFLOAT3 pNewPosition) { 
 	position = pNewPosition; 
@@ -116,6 +126,7 @@ void Entity::PrepMaterial(XMFLOAT4X4 pView, XMFLOAT4X4 pProjection) {
 
 	material->GetPixelShader()->SetSamplerState("basicSampler", material->GetSampleState());
 	material->GetPixelShader()->SetShaderResourceView("diffuseTexture", material->GetTexture());
+	
 	material->GetPixelShader()->SetShaderResourceView("specularMap", material->GetSpecularMap());
 	material->GetPixelShader()->SetShaderResourceView("normalMap", material->GetNormalMap());
 
