@@ -84,13 +84,20 @@ void Game::Init()
 	//meshes.push_back(new Mesh(device, "../../Assets/Models/cube.obj"));
 	meshes.push_back(new Mesh(device, "../../Assets/Models/plane.obj"));
 
+	// Gallery base
+	meshes.push_back(new Mesh(device, "../../Assets/Models/gallery.obj"));
+
 
 	exhibits.push_back(new Entity(meshes[0], materials[0], context));
-	exhibits[0]->SetPosition(XMFLOAT3(3,0,0));
+	exhibits[0]->SetPosition(XMFLOAT3(3, 0.5f, -3));
 	exhibits.push_back(new Entity(meshes[2], materials[0], context));
-	exhibits[1]->SetPosition(XMFLOAT3(-3, 0, 0));
-	entities.push_back(new Entity(meshes[1], materials[1], context));
+	exhibits[1]->SetPosition(XMFLOAT3(-3, 0.5f, -3));
 	//entities.push_back(new Entity(meshes[1], materials[1], context));
+
+	// Gallery base
+	entities.push_back(new Entity(meshes[4], materials[3], context));
+	entities[0]->SetPosition(XMFLOAT3(0.0f, -0.5f, 0.0f));
+	entities[0]->SetScale(XMFLOAT3(2.5f, 2.5f, 2.5f));
 
 	//UI Elements
 	GUIElements.push_back(new Entity(meshes[3], starMaterials[0], context));
@@ -103,12 +110,12 @@ void Game::Init()
 
 
 	// Define the world boundaries
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(5.0f, 0.0f, 5.0f)));
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(0.0f, 0.0f, 7.5f), XMFLOAT3(2.5f, 0.0f, 5.0f)));
+	// worldBounds.push_back(new BoundingBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(5.0f, 0.0f, 5.0f)));
+	// worldBounds.push_back(new BoundingBox(XMFLOAT3(0.0f, 0.0f, 7.5f), XMFLOAT3(2.5f, 0.0f, 5.0f)));
 
 	//make walls "visible" by adding an inverted box to represent their dimensions
-	entities[0]->SetScale(XMFLOAT3(worldBounds[0]->GetHalfSize().x + 0.2f, 3.0f, worldBounds[0]->GetHalfSize().z + 0.2f));
-	entities[0]->SetPosition(XMFLOAT3(worldBounds[0]->GetCenter().x, 1.0f, worldBounds[0]->GetCenter().z));
+	// entities[0]->SetScale(XMFLOAT3(worldBounds[0]->GetHalfSize().x + 0.2f, 3.0f, worldBounds[0]->GetHalfSize().z + 0.2f));
+	// entities[0]->SetPosition(XMFLOAT3(worldBounds[0]->GetCenter().x, 1.0f, worldBounds[0]->GetCenter().z));
 
 	//entities[2]->SetScale(XMFLOAT3(worldBounds[1]->GetHalfSize().x + 0.2f, 3.0f, worldBounds[0]->GetHalfSize().y + 0.2f));
 	//entities[2]->SetPosition(XMFLOAT3(worldBounds[1]->GetCenter().x, 0.0f, worldBounds[0]->GetCenter().y));
@@ -191,6 +198,14 @@ void Game::LoadMaterials() {
 	materials[2]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
 	materials[2]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 	materials[2]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
+
+	//White material
+	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
+	materials[3]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/white.png");
+	materials[3]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
+	materials[3]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+	materials[3]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
+	materials[3]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 	
 	//loop through all the ui star materials
 	for (int i = 0; i < 6; i++) {
@@ -257,6 +272,7 @@ void Game::Update(float deltaTime, float totalTime)
 
 	XMFLOAT3 newPosition = GameCamera->GetPosition();	// Position after the move
 
+	/*
 	bool willBeInBox = false;
 	int cameraCurBox = -1;
 	for (int i = 0; i < worldBounds.size(); i++)
@@ -294,7 +310,7 @@ void Game::Update(float deltaTime, float totalTime)
 	XMStoreFloat3(&newestPosition, DirectX::XMVectorLerp(XMLoadFloat3(&prevPosition), XMLoadFloat3(&GameCamera->GetPosition()), .5f));
 
 	GameCamera->SetPosition(newestPosition);
-
+	*/
 	DoExhibits();
 }
 
