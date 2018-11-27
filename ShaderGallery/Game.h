@@ -43,6 +43,20 @@ private:
 	ID3D11RasterizerState * rast;
 	ID3D11BlendState* blend;
 
+	//post process stuff
+	ID3D11SamplerState* sampleState;
+	D3D11_SAMPLER_DESC* sampleDescription;
+	ID3D11ShaderResourceView* finalSRV;		// Allows us to sample from the same texture
+	ID3D11RenderTargetView* finalRTV;		// Allows us to sample from the same texture
+	ID3D11RenderTargetView* blurRTV;		// Allows us to render to a texture
+	ID3D11ShaderResourceView* blurSRV;		// Allows us to sample from the same texture
+	ID3D11RenderTargetView* blur2RTV;		// Allows us to render to a texture
+	ID3D11ShaderResourceView* blur2SRV;		// Allows us to sample from the same texture
+
+	SimplePixelShader* addBlendPS;
+	SimplePixelShader* blurPS;
+	SimpleVertexShader* ppVS;
+
 	// Vector of active meshes
 	std::vector<Mesh*> meshes;
 

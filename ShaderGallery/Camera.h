@@ -26,10 +26,13 @@ public:
 
 	// Getters
 	XMFLOAT3 GetPosition() { return position; }
+	XMFLOAT4 GetRotation() { return rotation; }
+	XMFLOAT4 GetInitRotation () { return initRotation; }
 	XMFLOAT4X4 GetView() { return viewMatrix; }
 	XMFLOAT4X4 GetProjection() { return projMatrix; }
 
-	void SetPosition(XMFLOAT3 newPosition);
+	void SetPosition(XMFLOAT3 pPosition);
+	void SetRotation(XMFLOAT4 pRotation);
 
 	// Properties
 	float mouseSensitivity = 0.005f;
@@ -46,6 +49,8 @@ private:
 	// Transformations
 	XMFLOAT3 position;
 	XMFLOAT4 rotation;
+	XMFLOAT4 initRotation;
+
 	float xRotation;
 	float yRotation;
 };

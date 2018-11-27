@@ -8,6 +8,8 @@ Camera::Camera(float x, float y, float z)
 	xRotation = 0;
 	yRotation = 0;
 
+	initRotation = rotation;
+
 	XMStoreFloat4x4(&viewMatrix, XMMatrixIdentity());
 	XMStoreFloat4x4(&projMatrix, XMMatrixIdentity());
 }
@@ -114,7 +116,14 @@ void Camera::MakeGUI()
 	GUI = true;
 }
 
-void Camera::SetPosition(XMFLOAT3 newPosition)
+void Camera::SetPosition(XMFLOAT3 pPosition)
 {
-	position = newPosition;
+	position = pPosition;
+}
+
+void Camera::SetRotation(XMFLOAT4 pRotation)
+{
+	xRotation = pRotation.x;
+	yRotation = pRotation.y;
+	rotation = pRotation;
 }

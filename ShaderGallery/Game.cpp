@@ -61,6 +61,22 @@ Game::~Game()
 	rast->Release();
 	delete GameCamera;
 	delete GUICamera;
+
+	delete addBlendPS;
+	delete blurPS;
+	delete ppVS;
+
+	finalSRV->Release();
+	finalRTV->Release();
+
+	blurSRV->Release();
+	blurRTV->Release();
+
+	blur2SRV->Release();
+	blur2RTV->Release();
+
+	delete sampleDescription;
+	sampleState->Release();
 }
 
 // --------------------------------------------------------
@@ -69,6 +85,80 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
+	sampleDescription = new D3D11_SAMPLER_DESC();
+	sampleDescription->AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sampleDescription->AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sampleDescription->AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sampleDescription->BorderColor[0] = 0.0f;
+	sampleDescription->BorderColor[1] = 0.0f;
+	sampleDescription->BorderColor[2] = 0.0f;
+	sampleDescription->BorderColor[3] = 0.0f;
+	sampleDescription->ComparisonFunc = D3D11_COMPARISON_NEVER;
+	sampleDescription->Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sampleDescription->MaxAnisotropy = 0;
+	sampleDescription->MaxLOD = D3D11_FLOAT32_MAX;
+	sampleDescription->MinLOD = 0;
+	sampleDescription->MipLODBias = 0;
+	device->CreateSamplerState(sampleDescription, &sampleState);
+
+	//Post Process stuff
+	addBlendPS = new SimplePixelShader(device, context);
+	addBlendPS->LoadShaderFile(L"AddBlendPS.cso");
+
+	blurPS = new SimplePixelShader(device, context);
+	blurPS->LoadShaderFile(L"BlurPS.cso");
+
+	ppVS = new SimpleVertexShader(device, context);
+	ppVS->LoadShaderFile(L"PostProcessVS.cso");
+
+	// Create post process resources -----------------------------------------
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Width = width;
+	textureDesc.Height = height;
+	textureDesc.ArraySize = 1;
+	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.MipLevels = 1;
+	textureDesc.MiscFlags = 0;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	ID3D11Texture2D* ppTexture;
+	ID3D11Texture2D* ppTexture2;
+	ID3D11Texture2D* ppTexture3;
+
+	device->CreateTexture2D(&textureDesc, 0, &ppTexture);
+	device->CreateTexture2D(&textureDesc, 0, &ppTexture2);
+	device->CreateTexture2D(&textureDesc, 0, &ppTexture3);
+
+	// Create the Render Target View
+	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	rtvDesc.Format = textureDesc.Format;
+	rtvDesc.Texture2D.MipSlice = 0;
+	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+	device->CreateRenderTargetView(ppTexture, &rtvDesc, &blurRTV);
+	device->CreateRenderTargetView(ppTexture2, &rtvDesc, &blur2RTV);
+	device->CreateRenderTargetView(ppTexture3, &rtvDesc, &finalRTV);
+
+	// Create the Shader Resource View
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = textureDesc.Format;
+	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+
+	device->CreateShaderResourceView(ppTexture, &srvDesc, &blurSRV);
+	device->CreateShaderResourceView(ppTexture2, &srvDesc, &blur2SRV);
+	device->CreateShaderResourceView(ppTexture3, &srvDesc, &finalSRV);
+
+	// We don't need the texture reference itself no mo'
+	ppTexture->Release();
+	ppTexture2->Release();
+
+
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
@@ -88,10 +178,10 @@ void Game::Init()
 	meshes.push_back(new Mesh(device, "../../Assets/Models/gallery.obj"));
 
 
+	exhibits.push_back(new Entity(meshes[0], materials[5], context));
 	exhibits.push_back(new Entity(meshes[0], materials[0], context));
-	exhibits[0]->SetPosition(XMFLOAT3(3, 0.5f, -3));
-	exhibits.push_back(new Entity(meshes[2], materials[0], context));
-	exhibits[1]->SetPosition(XMFLOAT3(-3, 0.5f, -3));
+	exhibits[1]->SetPosition(XMFLOAT3(3, 0.25f, -3));
+	exhibits[0]->SetPosition(XMFLOAT3(-3, 0.4f, -3));
 	//entities.push_back(new Entity(meshes[1], materials[1], context));
 
 	// Gallery base
@@ -100,13 +190,20 @@ void Game::Init()
 	entities[0]->SetScale(XMFLOAT3(2.5f, 2.5f, 2.5f));
 
 	//UI Elements
+	//Start Holder
 	GUIElements.push_back(new Entity(meshes[3], starMaterials[0], context));
 	GUIElements[0]->SetRotation(XMFLOAT3(-(3.141592654f / 2), 0, 0));
 	GUIElements[0]->SetScale(XMFLOAT3(2.56f, .5f, 0.5f));
 
+	//E to rate
 	GUIElements.push_back(new Entity(meshes[3], materials[2], context));
 	GUIElements[1]->SetRotation(XMFLOAT3(-(3.141592654f / 2), 0, 0));
-	GUIElements[1]->SetScale(XMFLOAT3(389.0f / 200, 125.0f / 200, 125.0f / 200));
+	GUIElements[1]->SetScale(XMFLOAT3(389.0f / 300, 125.0f / 300, 125.0f / 300));
+
+	//R to restart
+	GUIElements.push_back(new Entity(meshes[3], materials[4], context));
+	GUIElements[2]->SetRotation(XMFLOAT3(-(3.141592654f / 2), 0, 0));
+	GUIElements[2]->SetScale(XMFLOAT3(449.0 / 400, 93.0f / 400, 93.0f / 400));
 
 
 	// Define the world boundaries
@@ -120,7 +217,7 @@ void Game::Init()
 	//entities[2]->SetScale(XMFLOAT3(worldBounds[1]->GetHalfSize().x + 0.2f, 3.0f, worldBounds[0]->GetHalfSize().y + 0.2f));
 	//entities[2]->SetPosition(XMFLOAT3(worldBounds[1]->GetCenter().x, 0.0f, worldBounds[0]->GetCenter().y));
 
-	light.AmbientColor = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
+	light.AmbientColor = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
 	light.DiffuseColor = XMFLOAT4(1, 1, 1, 1);
 	light.Direction = XMFLOAT3(1, -1, 0);
 
@@ -206,7 +303,23 @@ void Game::LoadMaterials() {
 	materials[3]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
 	materials[3]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 	materials[3]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
+
+	//Restart Texture
+	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
+	materials[4]->SetTexture(device, context, L"../../Assets/Textures/UI/restart.png");
+	materials[4]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
+	materials[4]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+	materials[4]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
+	materials[4]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 	
+	//Tiles Texture
+	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
+	materials[5]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/tiles_diffuse.png");
+	materials[5]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/tiles_spec.png");
+	materials[5]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/tiles_normal.png");
+	materials[5]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
+	materials[5]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
+
 	//loop through all the ui star materials
 	for (int i = 0; i < 6; i++) {
 		starMaterials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
@@ -263,8 +376,11 @@ void Game::Update(float deltaTime, float totalTime)
 
 	//rotate the helix that exists in entities
 	exhibits[0]->SetRotation(XMFLOAT3(0, totalTime * 0.5f, 0));
-	GUIElements[0]->SetPosition(XMFLOAT3((float)width / (2 * 100), 1, 2));
+	exhibits[1]->SetRotation(XMFLOAT3(0, totalTime * 0.5f, 0));
+
+	GUIElements[0]->SetPosition(XMFLOAT3((float)width / (2 * 100), 0.73f, 2));
 	GUIElements[1]->SetPosition(XMFLOAT3((float)width / (2 * 100), (float)height / (2 * 100), 2));
+	GUIElements[2]->SetPosition(XMFLOAT3(1.5f, 0.5f, 2));
 
 	// Movement
 	XMFLOAT3 prevPosition = GameCamera->GetPosition();	// Position before the move
@@ -312,6 +428,14 @@ void Game::Update(float deltaTime, float totalTime)
 	GameCamera->SetPosition(newestPosition);
 	*/
 	DoExhibits();
+
+	if (GetAsyncKeyState('R') & 0x8000) {
+		for (int i = 0; i < exhibits.size(); i++) {
+			exhibits[i]->SetRating(-1);
+		}
+		GameCamera->SetPosition(XMFLOAT3(0, 0, -5));
+		GameCamera->SetRotation(GameCamera->GetInitRotation());
+	}
 }
 
 //calculate stars for game rating system
@@ -378,13 +502,19 @@ void Game::DoExhibits()
 // --------------------------------------------------------
 void Game::Draw(float deltaTime, float totalTime)
 {
+	context->OMSetRenderTargets(1, &blurRTV, depthStencilView);
+
+	// Set buffers in the input assembler
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+
 	// Background color (Black in this case) for clearing
 	const float color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 	// Clear the render target and depth buffer (erases what's on the screen)
 	//  - Do this ONCE PER FRAME
 	//  - At the beginning of Draw (before drawing *anything*)
-	context->ClearRenderTargetView(backBufferRTV, color);
+	context->ClearRenderTargetView(blurRTV, color);
 	context->ClearDepthStencilView(
 		depthStencilView,
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
@@ -407,6 +537,77 @@ void Game::Draw(float deltaTime, float totalTime)
 		exhibits[i]->Render(GameCamera->GetView(), GameCamera->GetProjection());
 	}
 
+	//backBufferRTV
+	// Done with scene render - swap back to the back buffer
+	context->OMSetRenderTargets(1, &blur2RTV, 0);
+
+	// Post process draw ================================
+	context->ClearRenderTargetView(blur2RTV, color);
+
+	ppVS->SetShader();
+	blurPS->SetShader();
+	blurPS->SetInt("xDir", 0);
+	blurPS->SetInt("blurAmount", 10);
+	blurPS->SetFloat("pixelWidth", 1.0f / width);
+	blurPS->SetFloat("pixelHeight", 1.0f / height);
+	blurPS->CopyAllBufferData();
+
+	blurPS->SetShaderResourceView("Pixels", blurSRV);
+	blurPS->SetSamplerState("Sampler", sampleState);
+
+	// Unbind vertex and index buffers!
+	ID3D11Buffer* nothing = 0;
+	context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+	context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+
+	// Draw exactly 3 vertices
+	context->Draw(3, 0);
+	blurPS->SetShaderResourceView("Pixels", 0);
+
+	
+	// Done with scene render - swap back to the back buffer
+	context->OMSetRenderTargets(1, &finalRTV, 0);
+
+	// Post process draw ================================
+	context->ClearRenderTargetView(finalRTV, color);
+
+	blurPS->SetInt("xDir", 1);
+	blurPS->CopyAllBufferData();
+
+	blurPS->SetShaderResourceView("Pixels", blur2SRV);
+
+	// Unbind vertex and index buffers!
+	context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+	context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+
+	// Draw exactly 3 vertices
+	context->Draw(3, 0);
+	// Now that we're done, UNBIND the srv from the pixel shader
+	blurPS->SetShaderResourceView("Pixels", 0);
+
+	/**********************************************************************/	
+
+	// Done with scene render - swap back to the back buffer
+	context->OMSetRenderTargets(1, &backBufferRTV, 0);
+
+	// Post process draw ================================
+	context->ClearRenderTargetView(backBufferRTV, color);
+
+	addBlendPS->SetShader();
+	addBlendPS->SetShaderResourceView("Original", blurSRV);
+	addBlendPS->SetShaderResourceView("Pixels", finalSRV);
+	addBlendPS->SetSamplerState("Sampler", sampleState);
+
+	// Unbind vertex and index buffers!
+	context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+	context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+
+	// Draw exactly 3 vertices
+	context->Draw(3, 0);
+
+	// Now that we're done, UNBIND the srv from the pixel shader
+	blurPS->SetShaderResourceView("Pixels", 0);
+	
 	//reset depth buffer before rendering UI
 	context->ClearDepthStencilView(
 		depthStencilView,
@@ -417,9 +618,9 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	if (canRate) {
 		//for (int i = 0; i < GUIElements.size(); i++) {
-			GUIElements[0]->GetMaterial()->GetPixelShader()->SetData("light", &fullBright, sizeof(DirectionalLight));
-			GUIElements[0]->GetMaterial()->GetPixelShader()->SetFloat3("cameraPosition", GUICamera->GetPosition());
-			GUIElements[0]->Render(GUICamera->GetView(), GUICamera->GetProjection());
+		GUIElements[0]->GetMaterial()->GetPixelShader()->SetData("light", &fullBright, sizeof(DirectionalLight));
+		GUIElements[0]->GetMaterial()->GetPixelShader()->SetFloat3("cameraPosition", GUICamera->GetPosition());
+		GUIElements[0]->Render(GUICamera->GetView(), GUICamera->GetProjection());
 		//}
 	}
 	if (!isRating && canRate) {
@@ -427,6 +628,13 @@ void Game::Draw(float deltaTime, float totalTime)
 		GUIElements[1]->GetMaterial()->GetPixelShader()->SetFloat3("cameraPosition", GUICamera->GetPosition());
 		GUIElements[1]->Render(GUICamera->GetView(), GUICamera->GetProjection());
 	}
+	GUIElements[2]->GetMaterial()->GetPixelShader()->SetData("light", &fullBright, sizeof(DirectionalLight));
+	GUIElements[2]->GetMaterial()->GetPixelShader()->SetFloat3("cameraPosition", GUICamera->GetPosition());
+	GUIElements[2]->Render(GUICamera->GetView(), GUICamera->GetProjection());
+
+	// Reset any states we've changed for the next frame!
+	context->RSSetState(0);
+	context->OMSetDepthStencilState(0, 0);
 
 	// Present the back buffer to the user
 	//  - Puts the final frame we're drawing into the window so the user can see it
