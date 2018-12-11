@@ -1,9 +1,14 @@
 #include "BoundingBox.h"
 
-BoundingBox::BoundingBox(DirectX::XMFLOAT3 center, DirectX::XMFLOAT3 halfSize)
+BoundingBox::BoundingBox(DirectX::XMFLOAT3 topLeft, DirectX::XMFLOAT3 bottomRight)
 {
-	this->center = center;
-	this->halfSize = halfSize;
+	this->halfSize.x = (bottomRight.x - topLeft.x) / 2.0f;
+	this->halfSize.y = (bottomRight.y - topLeft.y) / 2.0f;
+	this->halfSize.z = (bottomRight.z - topLeft.z) / 2.0f;
+
+	this->center.x = topLeft.x + this->halfSize.x;
+	this->center.y = topLeft.y + this->halfSize.y;
+	this->center.z = topLeft.z + this->halfSize.z;
 }
 
 BoundingBox::~BoundingBox()

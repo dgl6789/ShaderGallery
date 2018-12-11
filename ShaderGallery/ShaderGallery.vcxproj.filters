@@ -45,6 +45,9 @@
     <ClCompile Include="BoundingBox.cpp">
       <Filter>Code Files</Filter>
     </ClCompile>
+    <ClCompile Include="Emitter.cpp">
+      <Filter>Code Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DXCore.h">
@@ -75,6 +78,9 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="BoundingBox.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Emitter.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

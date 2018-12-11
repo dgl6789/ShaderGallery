@@ -10,7 +10,8 @@ using namespace DirectX;
 class BoundingBox
 {
 public:
-	BoundingBox(DirectX::XMFLOAT3 center, DirectX::XMFLOAT3 halfSize);
+	// Looking at the XZ plane, where +Z is up and +X is right
+	BoundingBox(DirectX::XMFLOAT3 topLeft, DirectX::XMFLOAT3 bottomRight);
 	~BoundingBox();
 
 	bool PointInside(DirectX::XMFLOAT3 point);
