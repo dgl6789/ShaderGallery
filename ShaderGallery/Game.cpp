@@ -55,6 +55,7 @@ Game::~Game()
 	for (auto& e : entities) delete e;
 	for (auto& e : exhibits) delete e;
 	for (auto& w : worldBounds) delete w;
+	for (auto& e : exhibitBounds) delete e;
 	for (auto& g : GUIElements) delete g;
 
 	blend->Release();
@@ -209,28 +210,28 @@ void Game::Init()
 	// Define the world boundaries
 
 	// Starting Room
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(-5.04f, 0.0f, -13.3875f), XMFLOAT3(5.07f, 0.0f, -1.025f))); // Room
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(-1.67f, 0.0f, -1.0325f), XMFLOAT3(1.7f, 0.0f, 0.09f))); // North Doorway
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(5.07f, 0.0f, -4.4025f), XMFLOAT3(6.1925f, 0.0f, -2.155f))); // East Doorway
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(5.07f, 0.0f, -12.265f), XMFLOAT3(6.1925f, 0.0f, -10.0175f))); // Southeast Doorway
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(-4.75f, 0.0f, -13.15f), XMFLOAT3(4.75f, 0.0f, -1.25f))); // Room
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(-1.45f, 0.0f, -2.00f), XMFLOAT3(1.45f, 0.0f, 2.00f))); // North Doorway
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(3.00f, 0.0f, -4.15f), XMFLOAT3(8.20f, 0.0f, -2.40f))); // East Doorway
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(3.00f, 0.0f, -12.00f), XMFLOAT3(8.20f, 0.0f, -10.25f))); // Southeast Doorway
 
 	// North Room
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(-5.04f, 0.0f, 0.09f), XMFLOAT3(5.07f, 0.0f, 13.57f))); // Room
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(-6.1625f, 0.0f, 5.7075f), XMFLOAT3(-5.04f, 0.0f, 7.9525f))); // West Doorway
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(5.07f, 0.0f, 5.7075f), XMFLOAT3(6.1925f, 0.0f, 7.9525f))); // East Doorway
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(-4.80f, 0.0f, 0.35f), XMFLOAT3(4.80f, 0.0f, 13.30f))); // Room
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(-8.20f, 0.0f, 5.95f), XMFLOAT3(-3.00f, 0.0f, 7.70f))); // West Doorway
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(3.00f, 0.0f, 5.95f), XMFLOAT3(8.20f, 0.0f, 7.70f))); // East Doorway
 	
 	// Northwest Room
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(-15.1475f, 0.0f, 2.3375f), XMFLOAT3(-6.1625f, 0.0f, 11.3225f)));
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(-14.90f, 0.0f, 2.60f), XMFLOAT3(-6.40f, 0.0f, 11.10f)));
 
 	// Northeast Room
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(6.2025f, 0.0f, 2.3525f), XMFLOAT3(15.18f, 0.0f, 11.3225f))); // Room
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(9.5625f, 0.0f, 1.215f), XMFLOAT3(11.81f, 0.0f, 2.3375f))); // South Doorway
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(6.45f, 0.0f, 2.60f), XMFLOAT3(14.95f, 0.0f, 11.10f))); // Room
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(9.80f, 0.0f, -1.20f), XMFLOAT3(11.55f, 0.0f, 4.35f))); // South Doorway
 
 	// East Room
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(6.17f, 0.0f, -7.7725f), XMFLOAT3(15.18f, 0.0f, 1.215f)));
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(6.45f, 0.0f, -7.50f), XMFLOAT3(14.95f, 0.0f, 0.95f)));
 
 	// Southeast Room
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(6.1925f, 0.0f, -16.7575f), XMFLOAT3(15.18f, 0.0f, -8.895f)));
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(6.45f, 0.0f, -16.50f), XMFLOAT3(14.95f, 0.0f, -9.15f)));
 
 	//make walls "visible" by adding an inverted box to represent their dimensions
 	// entities[0]->SetScale(XMFLOAT3(worldBounds[0]->GetHalfSize().x + 0.2f, 3.0f, worldBounds[0]->GetHalfSize().z + 0.2f));
@@ -238,6 +239,10 @@ void Game::Init()
 
 	//entities[2]->SetScale(XMFLOAT3(worldBounds[1]->GetHalfSize().x + 0.2f, 3.0f, worldBounds[0]->GetHalfSize().y + 0.2f));
 	//entities[2]->SetPosition(XMFLOAT3(worldBounds[1]->GetCenter().x, 0.0f, worldBounds[0]->GetCenter().y));
+
+	// Define the exhibit bounds
+	exhibitBounds.push_back(new BoundingBox(XMFLOAT3(-4.0f, 0.0f, -4.0f), XMFLOAT3(-2.0f, 0.0f, -2.0f)));	// Checker Sphere
+	exhibitBounds.push_back(new BoundingBox(XMFLOAT3(2.0f, 0.0f, -4.0f), XMFLOAT3(4.0f, 0.0f, -2.0f)));		// Lava Sphere
 
 	light.AmbientColor = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
 	light.DiffuseColor = XMFLOAT4(1, 1, 1, 1);
@@ -410,8 +415,21 @@ void Game::Update(float deltaTime, float totalTime)
 
 	XMFLOAT3 newPosition = GameCamera->GetPosition();	// Position after the move
 
+	// Calculate exhibit collisions
+	for (int i = 0; i < exhibitBounds.size(); i++)
+	{
+		if (exhibitBounds[i]->PointInside(newPosition))
+		{
+			XMFLOAT3 edge = exhibitBounds[i]->VectorToEdgeFromInside(newPosition);
+
+			newPosition.x += edge.x;
+			newPosition.z += edge.z;
+		}
+	}
+
+	// Calculate gallery bound collisions
 	bool willBeInBox = false;
-	int cameraCurBox = -1;
+	static int cameraCurBox = 0;		// Static so that the game always knows the last box the player was in
 	for (int i = 0; i < worldBounds.size(); i++)
 	{
 		// Was the player in this box before moving?
@@ -432,17 +450,17 @@ void Game::Update(float deltaTime, float totalTime)
 	// If the player's move will put them out of bounds, make sure they stay in their current box!
 	if (worldBounds.size() > 0 && !willBeInBox)
 	{
-		// Failsafe, in case the player somehow started the frame out of bounds
-		if (cameraCurBox == -1)
-		{
-			cameraCurBox = 0;
-		}
-
 		// Adjust the player's new position to the edge of their box
-		newPosition.x = worldBounds[cameraCurBox]->VectorToEdge(newPosition).x;
-		newPosition.z = worldBounds[cameraCurBox]->VectorToEdge(newPosition).z;
-		GameCamera->TranslateTo(newPosition.x, 0.0f, newPosition.z);
+		XMFLOAT3 edge = worldBounds[cameraCurBox]->VectorToEdge(newPosition);
+
+		newPosition.x += edge.x;
+		newPosition.z += edge.z;
 	}
+
+	// Translate by delta position!
+	GameCamera->TranslateTo(newPosition.x - prevPosition.x, 0.0f, newPosition.z - prevPosition.z);
+
+	// Lerp to make collision detection less jank
 	XMFLOAT3 newestPosition;
 	XMStoreFloat3(&newestPosition, DirectX::XMVectorLerp(XMLoadFloat3(&prevPosition), XMLoadFloat3(&GameCamera->GetPosition()), .5f));
 

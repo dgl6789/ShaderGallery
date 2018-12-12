@@ -16,6 +16,7 @@ public:
 
 	bool PointInside(DirectX::XMFLOAT3 point);
 	DirectX::XMFLOAT3 VectorToEdge(DirectX::XMFLOAT3 point);
+	DirectX::XMFLOAT3 VectorToEdgeFromInside(DirectX::XMFLOAT3 point);
 	XMFLOAT3 GetCenter();
 	XMFLOAT3 GetHalfSize();
 

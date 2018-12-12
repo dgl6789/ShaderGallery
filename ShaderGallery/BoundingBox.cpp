@@ -31,27 +31,74 @@ DirectX::XMFLOAT3 BoundingBox::VectorToEdge(DirectX::XMFLOAT3 point)
 	DirectX::XMFLOAT3 response = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 
 	// Are we on the box's left?
-	if (point.x < center.x - halfSize.x)
+	if (point.x <= center.x - halfSize.x)
 	{
 		response.x = center.x - halfSize.x - point.x;
 	}
 
 	// Are we on the box's right?
-	else if (point.x > center.x + halfSize.x)
+	else if (point.x >= center.x + halfSize.x)
 	{
 		response.x = center.x + halfSize.x - point.x;
 	}
 
 	// Are we above the box?
-	if (point.z < center.z - halfSize.z)
+	if (point.z <= center.z - halfSize.z)
 	{
 		response.z = center.z - halfSize.z - point.z;
 	}
 
 	// Are we below the box?
-	else if (point.z > center.z + halfSize.z)
+	else if (point.z >= center.z + halfSize.z)
 	{
 		response.z = center.z + halfSize.z - point.z;
+	}
+
+	return response;
+}
+
+DirectX::XMFLOAT3 BoundingBox::VectorToEdgeFromInside(DirectX::XMFLOAT3 point)
+{
+	DirectX::XMFLOAT3 response = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+
+	// If we're not inside the box, just return the default
+	if (!PointInside(point))
+	{
+		return response;
+	}
+
+	// Are we left of center?
+	if (point.x < center.x)
+	{
+		response.x = (center.x - halfSize.x) - point.x;
+	}
+
+	// Or right of center?
+	else if (point.x > center.x)
+	{
+		response.x = (center.x + halfSize.x) - point.x;
+	}
+
+	// Are we over center?
+	if (point.z < center.z)
+	{
+		response.z = (center.z - halfSize.z) - point.z;
+	}
+
+	// Or under center?
+	else if (point.z > center.z)
+	{
+		response.z = (center.z + halfSize.z) - point.z;
+	}
+
+	// Only the smaller number remains, biased towards x
+	if (fabsf(response.x) <= fabsf(response.z))
+	{
+		response.z = 0.0f;
+	}
+	else
+	{
+		response.x = 0.0f;
 	}
 
 	return response;
