@@ -11,11 +11,13 @@
 #include "Camera.h"
 #include <vector>
 #include "BoundingBox.h"
+#include "Emitter.h"
 
 class Mesh;
 class Entity;
 class Camera;
 class Material;
+class Emitter;
 
 using namespace DirectX;
 
@@ -70,6 +72,12 @@ private:
 	SimplePixelShader* pixelShader;
 	SimpleVertexShader* vertexShader;
 
+	// Particle Emitter Shaders
+	SimplePixelShader* particlePS;
+	SimpleVertexShader* particleVS;
+	ID3D11DepthStencilState* particleDepthState;
+	ID3D11BlendState* particleBlendState;
+
 	// Vector of active meshes
 	std::vector<Mesh*> meshes;
 
@@ -86,6 +94,9 @@ private:
 	std::vector<BoundingBox*> worldBounds;
 	std::vector<BoundingBox*> exhibitBounds;
 
+	// Vector to hold all emitterrs
+	std::vector<Emitter*> emitters;
+
 	// Cameras
 	Camera* GameCamera;
 	Camera* GUICamera;
@@ -99,6 +110,7 @@ private:
 	void CreateBasicGeometry();
 	void DoStars();
 	void DoExhibits();
+	void DoEmitters(float deltaTime);
 	void SetUpShadowMap();
 
 	void DrawBloom();

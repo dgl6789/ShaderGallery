@@ -34,6 +34,15 @@ Emitter::Emitter(
 
 	particleList = new Particle[maxParticleCount];
 
+	localParticleVertices = new ParticleVertex[4 * maxParticleCount];
+	for (int i = 0; i < maxParticleCount * 4; i += 4)
+	{
+		localParticleVertices[i + 0].uv = XMFLOAT2(0, 0);
+		localParticleVertices[i + 1].uv = XMFLOAT2(1, 0);
+		localParticleVertices[i + 2].uv = XMFLOAT2(1, 1);
+		localParticleVertices[i + 3].uv = XMFLOAT2(0, 1);
+	}
+
 	this->firstAliveIndex = 0;
 	this->firstDeadIndex = 0;
 
@@ -152,7 +161,7 @@ void Emitter::UpdateParticle(float dt, int index)
 	float agePercent = particleList[index].age / lifetime;
 
 	// Lerp size
-	particleList[index].size = (startSize * (1.0f / agePercent)) + (endSize * agePercent);
+	particleList[index].size = (startSize * (1.0f - agePercent)) + (endSize * agePercent);
 
 	// Lerp color
 	XMStoreFloat4(
@@ -174,9 +183,17 @@ void Emitter::SpawnParticle()
 	// Reset new particle's data
 	particleList[firstDeadIndex].position = position;
 	particleList[firstDeadIndex].color = startColor;
-	particleList[firstDeadIndex].velocity = startVelocity;
 	particleList[firstDeadIndex].size = startSize;
 	particleList[firstDeadIndex].age = 0.0f;
+
+	// Randomize the particle's velocity, because FIRE
+
+	int angles = 91;					// Should always be odd and > 0; the number of angles the fire can fly at
+	float calmness = 10000.0f;		// The higher this number, the calmer the fire
+
+	particleList[firstDeadIndex].velocity = startVelocity;
+	particleList[firstDeadIndex].velocity.x = ((rand() % angles) - (angles / 2)) / (calmness * angles);
+	particleList[firstDeadIndex].velocity.z = ((rand() % angles) - (angles / 2)) / (calmness * angles);
 
 	firstDeadIndex++;
 	firstDeadIndex %= maxParticleCount;

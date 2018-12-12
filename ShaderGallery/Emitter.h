@@ -5,6 +5,8 @@
 #include "Camera.h"
 #include "SimpleShader.h"
 
+class Camera;
+
 struct Particle
 {
 	DirectX::XMFLOAT3 position;

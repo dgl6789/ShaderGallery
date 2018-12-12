@@ -73,6 +73,7 @@ Game::~Game()
 	for (auto& m : starMaterials) delete m;
 	for (auto& e : entities) delete e;
 	for (auto& e : exhibits) delete e;
+	for (auto& e : emitters) delete e;
 	for (auto& w : worldBounds) delete w;
 	for (auto& e : exhibitBounds) delete e;
 	for (auto& g : GUIElements) delete g;
@@ -147,6 +148,12 @@ void Game::Init()
 	// Load shadow map shader
 	shadowVS = new SimpleVertexShader(device, context);
 	shadowVS->LoadShaderFile(L"ShadowMapVS.cso");
+
+	// Load particle shaders
+	particlePS = new SimplePixelShader(device, context);
+	particlePS->LoadShaderFile(L"ParticlePS.cso");
+	particleVS = new SimpleVertexShader(device, context);
+	particleVS->LoadShaderFile(L"ParticleVS.cso");
 
 	// Create post process resources -----------------------------------------
 	D3D11_TEXTURE2D_DESC textureDesc = {};
@@ -269,6 +276,46 @@ void Game::Init()
 	// Define the exhibit bounds
 	exhibitBounds.push_back(new BoundingBox(XMFLOAT3(-4.0f, 0.0f, -4.0f), XMFLOAT3(-2.0f, 0.0f, -2.0f)));	// Checker Sphere
 	exhibitBounds.push_back(new BoundingBox(XMFLOAT3(2.0f, 0.0f, -4.0f), XMFLOAT3(4.0f, 0.0f, -2.0f)));		// Lava Sphere
+
+	// Particle Emitters
+	// A depth state for the particles
+	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+	dsDesc.DepthEnable = true;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // Turns off depth writing
+	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	device->CreateDepthStencilState(&dsDesc, &particleDepthState);
+
+
+	// Blend for particles (additive)
+	D3D11_BLEND_DESC particleBlend = {};
+	particleBlend.AlphaToCoverageEnable = false;
+	particleBlend.IndependentBlendEnable = false;
+	particleBlend.RenderTarget[0].BlendEnable = true;
+	particleBlend.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	particleBlend.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+	particleBlend.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	particleBlend.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	particleBlend.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	particleBlend.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	particleBlend.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	device->CreateBlendState(&particleBlend, &particleBlendState);
+
+	// Create Emitters
+	emitters.push_back(new Emitter(
+		XMFLOAT3(0.0f, 0.0f, 0.0f),				// Position
+		XMFLOAT3(0.0f, 0.0002f, 0.0f),			// Initial Particle Velocity
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),		// Initial Particle Color
+		XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f),		// Final Particle Color
+		0.1f,									// Initial Particle Size
+		0.3f,									// Final Particle Size
+		1000,									// Max Number of Particles
+		20.0f,									// Particles per Second
+		1.0f,									// Particle Lifetime
+		device,
+		materials[7]->GetVertexShader(),
+		materials[7]->GetPixelShader(),
+		materials[7]->GetTexture()
+		));
 
 	light.AmbientColor = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
 	light.DiffuseColor = XMFLOAT4(1, 1, 1, 1);
@@ -432,6 +479,12 @@ void Game::LoadMaterials() {
 	materials[6]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
 	materials[6]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
 
+	// Particle Texture
+	materials.push_back(new Material(particleVS, particlePS));
+	materials[7]->SetTexture(device, context, L"../../Assets/Textures/Particles/fireParticle.jpg");
+	materials[7]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/NO_SPEC.png");
+	materials[7]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+
 	//loop through all the ui star materials
 	for (int i = 0; i < 6; i++) {
 		starMaterials.push_back(new Material(vertexShader, pixelShader));
@@ -551,6 +604,8 @@ void Game::Update(float deltaTime, float totalTime)
 	
 	DoExhibits();
 
+	DoEmitters(deltaTime);
+
 	if (GetAsyncKeyState('R') & 0x8000) {
 		for (int i = 0; i < exhibits.size(); i++) {
 			exhibits[i]->SetRating(-1);
@@ -619,6 +674,14 @@ void Game::DoExhibits()
 	}
 }
 
+void Game::DoEmitters(float deltaTime)
+{
+	for (int i = 0; i < emitters.size(); i++)
+	{
+		emitters[i]->Update(deltaTime);
+	}
+}
+
 // --------------------------------------------------------
 // Clear the screen, redraw everything, present to the user
 // --------------------------------------------------------
@@ -664,6 +727,19 @@ void Game::Draw(float deltaTime, float totalTime)
 		exhibits[i]->GetMaterial()->GetPixelShader()->SetFloat3("cameraPosition", GameCamera->GetPosition());
 		exhibits[i]->Render(GameCamera->GetView(), GameCamera->GetProjection());
 	}
+
+	// Particle states
+	float particleBlend[4] = { 1,1,1,1 };
+	context->OMSetBlendState(particleBlendState, particleBlend, 0xffffffff);  // Additive blending
+	context->OMSetDepthStencilState(particleDepthState, 0);			// No depth WRITING
+
+	for (int i = 0; i < emitters.size(); i++)
+	{
+		emitters[i]->Draw(context, GameCamera);
+	}
+
+	// Reset to default states
+	context->OMSetBlendState(blend, particleBlend, 0xFFFFFFFF);
 
 	DrawBloom();
 
