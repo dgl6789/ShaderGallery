@@ -1,3 +1,3 @@
 ﻿  Game.cpp
-z:\igmprofile\documents\ggp\shadergallery\shadergallery\game.cpp(206): warning C4305: 'argument': truncation from 'double' to 'float'
+z:\igmprofile\documents\ggp\shadergallery\shadergallery\game.cpp(207): warning C4305: 'argument': truncation from 'double' to 'float'
   ShaderGallery.vcxproj -> Z:\IGMProfile\Documents\GGP\ShaderGallery\x64\Debug\ShaderGallery.exe

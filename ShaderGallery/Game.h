@@ -71,6 +71,7 @@ private:
 
 	// Vector to hold the world boundary boxes
 	std::vector<BoundingBox*> worldBounds;
+	std::vector<BoundingBox*> exhibitBounds;
 
 	// Cameras
 	Camera* GameCamera;
