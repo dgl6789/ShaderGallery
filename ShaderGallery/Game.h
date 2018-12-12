@@ -11,6 +11,7 @@
 #include "Camera.h"
 #include <vector>
 #include "BoundingBox.h"
+#include "DDSTextureLoader.h"
 
 class Mesh;
 class Entity;
@@ -56,6 +57,16 @@ private:
 	SimplePixelShader* addBlendPS;
 	SimplePixelShader* blurPS;
 	SimpleVertexShader* ppVS;
+
+	//Sky
+	ID3D11ShaderResourceView* skySRV;
+	ID3D11DepthStencilState* skyDepthState;
+	ID3D11RasterizerState* skyRasterizerState;
+
+	Mesh* skyMesh;
+
+	SimpleVertexShader* skyVertexShader;
+	SimplePixelShader* skyPixelShader;
 
 	// Vector of active meshes
 	std::vector<Mesh*> meshes;

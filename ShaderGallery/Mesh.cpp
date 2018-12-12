@@ -209,7 +209,7 @@ void Mesh::CreateBuffers(Vertex* vertArray, int numVerts, unsigned int* indexArr
 	device->CreateBuffer(&ibd, &initialIndexData, &indexBuffer);
 
 	// Save the indices
-	//this->numIndices = numIndices;
+	this->numIndices = numIndices;
 }
 
 // Calculates the tangents of the vertices in a mesh
