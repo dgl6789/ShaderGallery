@@ -186,7 +186,7 @@ void Game::Init()
 	//entities.push_back(new Entity(meshes[1], materials[1], context));
 
 	// Gallery base
-	entities.push_back(new Entity(meshes[4], materials[3], context));
+	entities.push_back(new Entity(meshes[4], materials[6], context));
 	entities[0]->SetPosition(XMFLOAT3(0.0f, -0.5f, 0.0f));
 	entities[0]->SetScale(XMFLOAT3(2.5f, 2.5f, 2.5f));
 
@@ -210,35 +210,24 @@ void Game::Init()
 	// Define the world boundaries
 
 	// Starting Room
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(-4.75f, 0.0f, -13.15f), XMFLOAT3(4.75f, 0.0f, -1.25f))); // Room
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(-1.45f, 0.0f, -2.00f), XMFLOAT3(1.45f, 0.0f, 2.00f))); // North Doorway
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(3.00f, 0.0f, -4.15f), XMFLOAT3(8.20f, 0.0f, -2.40f))); // East Doorway
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(3.00f, 0.0f, -12.00f), XMFLOAT3(8.20f, 0.0f, -10.25f))); // Southeast Doorway
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(-10, 0.0f, -18.3875f), XMFLOAT3(2.50f, 0.0f, 15.5f))); // Room
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(-12, 0.0f, 1), XMFLOAT3(-9.5f, 0.0f, 4))); // West Doorway
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(2, 0.0f, 1), XMFLOAT3(5, 0.0f, 4))); // East Doorway
 
-	// North Room
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(-4.80f, 0.0f, 0.35f), XMFLOAT3(4.80f, 0.0f, 13.30f))); // Room
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(-8.20f, 0.0f, 5.95f), XMFLOAT3(-3.00f, 0.0f, 7.70f))); // West Doorway
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(3.00f, 0.0f, 5.95f), XMFLOAT3(8.20f, 0.0f, 7.70f))); // East Doorway
-	
-	// Northwest Room
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(-14.90f, 0.0f, 2.60f), XMFLOAT3(-6.40f, 0.0f, 11.10f)));
+	//// West Room
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(-24, 0.0f, -4.0f), XMFLOAT3(-12, 0.0f, 8))); // Room
 
-	// Northeast Room
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(6.45f, 0.0f, 2.60f), XMFLOAT3(14.95f, 0.0f, 11.10f))); // Room
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(9.80f, 0.0f, -1.20f), XMFLOAT3(11.55f, 0.0f, 4.35f))); // South Doorway
+	//// East Room
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(5, 0.0f, -3), XMFLOAT3(17, 0.0f, 9)));
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(10, 0.0f, -6), XMFLOAT3(11, 0.0f, -2))); // South door
 
-	// East Room
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(6.45f, 0.0f, -7.50f), XMFLOAT3(14.95f, 0.0f, 0.95f)));
+	//// Southeast Room
+	worldBounds.push_back(new BoundingBox(XMFLOAT3(5, 0.0f, -17), XMFLOAT3(17, 0.0f, -6))); // Room
 
-	// Southeast Room
-	worldBounds.push_back(new BoundingBox(XMFLOAT3(6.45f, 0.0f, -16.50f), XMFLOAT3(14.95f, 0.0f, -9.15f)));
-
-	//make walls "visible" by adding an inverted box to represent their dimensions
-	// entities[0]->SetScale(XMFLOAT3(worldBounds[0]->GetHalfSize().x + 0.2f, 3.0f, worldBounds[0]->GetHalfSize().z + 0.2f));
-	// entities[0]->SetPosition(XMFLOAT3(worldBounds[0]->GetCenter().x, 1.0f, worldBounds[0]->GetCenter().z));
-
-	//entities[2]->SetScale(XMFLOAT3(worldBounds[1]->GetHalfSize().x + 0.2f, 3.0f, worldBounds[0]->GetHalfSize().y + 0.2f));
-	//entities[2]->SetPosition(XMFLOAT3(worldBounds[1]->GetCenter().x, 0.0f, worldBounds[0]->GetCenter().y));
+	// Bounds testing block
+	// entities.push_back(new Entity(meshes[1], materials[3], context));
+	// entities[1]->SetScale(XMFLOAT3(worldBounds[6]->GetHalfSize().x, 1.0f, worldBounds[6]->GetHalfSize().z));
+	// entities[1]->SetPosition(XMFLOAT3(worldBounds[6]->GetCenter().x, 1.0f, worldBounds[6]->GetCenter().z));
 
 	// Define the exhibit bounds
 	exhibitBounds.push_back(new BoundingBox(XMFLOAT3(-4.0f, 0.0f, -4.0f), XMFLOAT3(-2.0f, 0.0f, -2.0f)));	// Checker Sphere
@@ -346,6 +335,14 @@ void Game::LoadMaterials() {
 	materials[5]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/tiles_normal.png");
 	materials[5]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
 	materials[5]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
+
+	//Gallery Texture
+	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
+	materials[6]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/galleryTexture.png");
+	materials[6]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
+	materials[6]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+	materials[6]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
+	materials[6]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 
 	//loop through all the ui star materials
 	for (int i = 0; i < 6; i++) {

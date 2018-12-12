@@ -1,3 +1,22 @@
-﻿  Game.cpp
-z:\igmprofile\documents\ggp\shadergallery\shadergallery\game.cpp(207): warning C4305: 'argument': truncation from 'double' to 'float'
-  ShaderGallery.vcxproj -> Z:\IGMProfile\Documents\GGP\ShaderGallery\x64\Debug\ShaderGallery.exe
+﻿  compilation object save succeeded; see D:\Documents\ShaderGallery\x64\Debug\ParticlePS.cso
+  compilation object save succeeded; see D:\Documents\ShaderGallery\x64\Debug\ParticleVS.cso
+  BoundingBox.cpp
+  Camera.cpp
+  DXCore.cpp
+  Emitter.cpp
+d:\documents\shadergallery\shadergallery\emitter.cpp(58): warning C4018: '<': signed/unsigned mismatch
+d:\documents\shadergallery\shadergallery\emitter.cpp(95): warning C4018: '<': signed/unsigned mismatch
+d:\documents\shadergallery\shadergallery\emitter.cpp(104): warning C4018: '<': signed/unsigned mismatch
+d:\documents\shadergallery\shadergallery\emitter.cpp(109): warning C4018: '<': signed/unsigned mismatch
+d:\documents\shadergallery\shadergallery\emitter.cpp(197): warning C4018: '<': signed/unsigned mismatch
+d:\documents\shadergallery\shadergallery\emitter.cpp(206): warning C4018: '<': signed/unsigned mismatch
+d:\documents\shadergallery\shadergallery\emitter.cpp(211): warning C4018: '<': signed/unsigned mismatch
+  Entity.cpp
+  Game.cpp
+d:\documents\shadergallery\shadergallery\game.cpp(207): warning C4305: 'argument': truncation from 'double' to 'float'
+  Main.cpp
+  Material.cpp
+  Mesh.cpp
+  SimpleShader.cpp
+  Generating Code...
+  ShaderGallery.vcxproj -> D:\Documents\ShaderGallery\x64\Debug\ShaderGallery.exe
