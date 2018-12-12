@@ -28,6 +28,22 @@ Game::Game(HINSTANCE hInstance)
 	GUICamera->MakeGUI();
 	GUICamera->UpdateProjectionMatrix((float)width / 100, (float)height / 100);
 
+	XMStoreFloat4x4(
+		&shadowViewMatrix,
+		XMMatrixTranspose(XMMatrixLookAtLH(
+			XMVectorSet(-20, 20, 0, 0),	// Position - Up 20 units and backwards 20 units
+			XMVectorSet(0, 0, 0, 0),	// Target - Origin (0,0,0)
+			XMVectorSet(0, 1, 0, 0)))); // Up - positive Y axis (0,1,0)
+
+	XMStoreFloat4x4(
+		&shadowProjectionMatrix,
+		XMMatrixTranspose(XMMatrixOrthographicLH(
+			10,			// Width of projection "box"
+			10,			// Height of projection "box"
+			0.1f,		// Near clip dist
+			100.0f)));	// Far clip dist
+
+
 	meshes = { };
 	entities = { };
 	materials = { };
@@ -48,6 +64,9 @@ Game::Game(HINSTANCE hInstance)
 // --------------------------------------------------------
 Game::~Game()
 {
+	delete pixelShader;
+	delete vertexShader;
+
 	// Delete each added resource
 	for (auto& m : meshes) delete m;
 	for (auto& m : materials) delete m;
@@ -66,6 +85,13 @@ Game::~Game()
 	delete addBlendPS;
 	delete blurPS;
 	delete ppVS;
+
+	// Clean up shadow map
+	shadowDSV->Release();
+	shadowSRV->Release();
+	shadowRasterizer->Release();
+	shadowSampler->Release();
+	delete shadowVS;
 
 	finalSRV->Release();
 	finalRTV->Release();
@@ -86,6 +112,12 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
+	pixelShader = new SimplePixelShader(device, context);
+	pixelShader->LoadShaderFile(L"PixelShader.cso");
+
+	vertexShader = new SimpleVertexShader(device, context);
+	vertexShader->LoadShaderFile(L"VertexShader.cso");
+
 	sampleDescription = new D3D11_SAMPLER_DESC();
 	sampleDescription->AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sampleDescription->AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -111,6 +143,10 @@ void Game::Init()
 
 	ppVS = new SimpleVertexShader(device, context);
 	ppVS->LoadShaderFile(L"PostProcessVS.cso");
+
+	// Load shadow map shader
+	shadowVS = new SimpleVertexShader(device, context);
+	shadowVS->LoadShaderFile(L"ShadowMapVS.cso");
 
 	// Create post process resources -----------------------------------------
 	D3D11_TEXTURE2D_DESC textureDesc = {};
@@ -158,6 +194,7 @@ void Game::Init()
 	// We don't need the texture reference itself no mo'
 	ppTexture->Release();
 	ppTexture2->Release();
+	ppTexture3->Release();
 
 
 	// Helper methods for loading shaders, creating some basic
@@ -271,11 +308,76 @@ void Game::Init()
 	float factors[] = { 1,1,1,1 };
 	context->OMSetBlendState(blend, factors, 0xFFFFFFFF);
 	/*************************************************************************/
+	SetUpShadowMap();
 
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
 	// Essentially: "What kind of shape should the GPU draw with our data?"
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
+void Game::SetUpShadowMap()
+{
+	// Create shadow requirements ------------------------------------------
+	shadowMapSize = 1024;
+
+
+	// Create the actual texture that will be the shadow map
+	D3D11_TEXTURE2D_DESC shadowDesc = {};
+	shadowDesc.Width = shadowMapSize;
+	shadowDesc.Height = shadowMapSize;
+	shadowDesc.ArraySize = 1;
+	shadowDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	shadowDesc.CPUAccessFlags = 0;
+	shadowDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+	shadowDesc.MipLevels = 1;
+	shadowDesc.MiscFlags = 0;
+	shadowDesc.SampleDesc.Count = 1;
+	shadowDesc.SampleDesc.Quality = 0;
+	shadowDesc.Usage = D3D11_USAGE_DEFAULT;
+	ID3D11Texture2D* shadowTexture;
+	device->CreateTexture2D(&shadowDesc, 0, &shadowTexture);
+
+	// Create the depth/stencil
+	D3D11_DEPTH_STENCIL_VIEW_DESC shadowDSDesc = {};
+	shadowDSDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	shadowDSDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	shadowDSDesc.Texture2D.MipSlice = 0;
+	device->CreateDepthStencilView(shadowTexture, &shadowDSDesc, &shadowDSV);
+
+	// Create the SRV for the shadow map
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	device->CreateShaderResourceView(shadowTexture, &srvDesc, &shadowSRV);
+
+	// Release the texture reference since we don't need it
+	shadowTexture->Release();
+
+	// Create the special "comparison" sampler state for shadows
+	D3D11_SAMPLER_DESC shadowSampDesc = {};
+	shadowSampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR; // Could be anisotropic
+	shadowSampDesc.ComparisonFunc = D3D11_COMPARISON_LESS;
+	shadowSampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.BorderColor[0] = 1.0f;
+	shadowSampDesc.BorderColor[1] = 1.0f;
+	shadowSampDesc.BorderColor[2] = 1.0f;
+	shadowSampDesc.BorderColor[3] = 1.0f;
+	device->CreateSamplerState(&shadowSampDesc, &shadowSampler);
+
+	// Create a rasterizer state
+	D3D11_RASTERIZER_DESC shadowRastDesc = {};
+	shadowRastDesc.FillMode = D3D11_FILL_SOLID;
+	shadowRastDesc.CullMode = D3D11_CULL_BACK;
+	shadowRastDesc.DepthClipEnable = true;
+	shadowRastDesc.DepthBias = 1000; // Multiplied by (smallest possible value > 0 in depth buffer)
+	shadowRastDesc.DepthBiasClamp = 0.0f;
+	shadowRastDesc.SlopeScaledDepthBias = 1.0f;
+	device->CreateRasterizerState(&shadowRastDesc, &shadowRasterizer);
 }
 
 // --------------------------------------------------------
@@ -289,64 +391,50 @@ void Game::LoadMaterials() {
 	//IF NO SPECULAR MAP EXISTS FOR A MATERIAL, SET IT USING THE NO_SPEC.png FILE WITHIN THE TEXTURES FOLDER
 
 	// Lava Texture
-	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
+	materials.push_back(new Material(vertexShader, pixelShader));
 	materials[0]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/Lava_005_COLOR.jpg");
 	materials[0]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
 	materials[0]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/Lava_005_NORM.jpg");
-	materials[0]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
-	materials[0]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 
 	// Panel Texture
-	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
+	materials.push_back(new Material(vertexShader, pixelShader));
 	materials[1]->SetTexture(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
 	materials[1]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
 	materials[1]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/panel_normal.png");
-	materials[1]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
-	materials[1]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 
 	//Rate Texture
-	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
+	materials.push_back(new Material(vertexShader, pixelShader));
 	materials[2]->SetTexture(device, context, L"../../Assets/Textures/UI/rate.png");
 	materials[2]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
 	materials[2]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
-	materials[2]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
-	materials[2]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 
 	//White material
-	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
+	materials.push_back(new Material(vertexShader, pixelShader));
 	materials[3]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/white.png");
 	materials[3]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
 	materials[3]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
-	materials[3]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
-	materials[3]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 
 	//Restart Texture
-	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
+	materials.push_back(new Material(vertexShader, pixelShader));
 	materials[4]->SetTexture(device, context, L"../../Assets/Textures/UI/restart.png");
 	materials[4]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
 	materials[4]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
-	materials[4]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
-	materials[4]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 	
 	//Tiles Texture
-	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
+	materials.push_back(new Material(vertexShader, pixelShader));
 	materials[5]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/tiles_diffuse.png");
 	materials[5]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/tiles_spec.png");
 	materials[5]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/tiles_normal.png");
-	materials[5]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
-	materials[5]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 
 	//Gallery Texture
-	materials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
+	materials.push_back(new Material(vertexShader, pixelShader));
 	materials[6]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/galleryTexture.png");
 	materials[6]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
 	materials[6]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
-	materials[6]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
-	materials[6]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 
 	//loop through all the ui star materials
 	for (int i = 0; i < 6; i++) {
-		starMaterials.push_back(new Material(new SimpleVertexShader(device, context), new SimplePixelShader(device, context)));
+		starMaterials.push_back(new Material(vertexShader, pixelShader));
 
 		//concatenate a wstring then reference its first index to get a wchar_t* object
 		std::wstring w_file = L"../../Assets/Textures/UI/ui_starTray_";
@@ -356,8 +444,6 @@ void Game::LoadMaterials() {
 		starMaterials[i]->SetTexture(device, context, &w_file[0]);
 		starMaterials[i]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/NO_SPEC.png");
 		starMaterials[i]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
-		starMaterials[i]->GetVertexShader()->LoadShaderFile(L"VertexShader.cso");
-		starMaterials[i]->GetPixelShader()->LoadShaderFile(L"PixelShader.cso");
 	}
 	
 }
@@ -538,14 +624,12 @@ void Game::DoExhibits()
 // --------------------------------------------------------
 void Game::Draw(float deltaTime, float totalTime)
 {
-	context->OMSetRenderTargets(1, &blurRTV, depthStencilView);
-
-	// Set buffers in the input assembler
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
+	DrawShadowMap();
 
 	// Background color (Black in this case) for clearing
 	const float color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+	context->OMSetRenderTargets(1, &blurRTV, depthStencilView);
 
 	// Clear the render target and depth buffer (erases what's on the screen)
 	//  - Do this ONCE PER FRAME
@@ -561,17 +645,113 @@ void Game::Draw(float deltaTime, float totalTime)
 	// Set buffers in the input assembler
 	//  - Do this ONCE PER OBJECT you're drawing, since each object might
 	//    have different geometry.
+
 	for (int i = 0; i < entities.size(); i++) {
+		entities[i]->GetMaterial()->GetPixelShader()->SetInt("ReceiveShadows", 1);
 		entities[i]->GetMaterial()->GetPixelShader()->SetData("light", &light, sizeof(DirectionalLight));
 		entities[i]->GetMaterial()->GetPixelShader()->SetFloat3("cameraPosition", GameCamera->GetPosition());
+		entities[i]->GetMaterial()->GetVertexShader()->SetMatrix4x4("lightView", shadowViewMatrix);
+		entities[i]->GetMaterial()->GetVertexShader()->SetMatrix4x4("lightProj", shadowProjectionMatrix);
+		entities[i]->GetMaterial()->GetPixelShader()->SetShaderResourceView("ShadowMap", shadowSRV);
+		entities[i]->GetMaterial()->GetPixelShader()->SetSamplerState("ShadowSampler", shadowSampler);
+
 		entities[i]->Render(GameCamera->GetView(), GameCamera->GetProjection());
 	}
 
 	for (int i = 0; i < exhibits.size(); i++) {
+		exhibits[i]->GetMaterial()->GetPixelShader()->SetInt("ReceiveShadows", 0);
 		exhibits[i]->GetMaterial()->GetPixelShader()->SetData("light", &light, sizeof(DirectionalLight));
 		exhibits[i]->GetMaterial()->GetPixelShader()->SetFloat3("cameraPosition", GameCamera->GetPosition());
 		exhibits[i]->Render(GameCamera->GetView(), GameCamera->GetProjection());
 	}
+
+	DrawBloom();
+
+	DrawUI();
+
+	// Reset any states we've changed for the next frame!
+	context->RSSetState(0);
+	context->OMSetDepthStencilState(0, 0);
+
+	// Present the back buffer to the user
+	//  - Puts the final frame we're drawing into the window so the user can see it
+	//  - Do this exactly ONCE PER FRAME (always at the very end of the frame)
+	swapChain->Present(0, 0);
+}
+
+void Game::DrawShadowMap()
+{
+	// Initial setup of targets and states ============
+	// No render target (we don't need colors), and set our shadow depth view
+	context->OMSetRenderTargets(0, 0, shadowDSV);
+
+	// Clear depth only
+	context->ClearDepthStencilView(shadowDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	// Special rasterizer to handle some shadow-map issues
+	context->RSSetState(shadowRasterizer);
+
+
+	// Need a viewport ===============
+	// Must match the exact dimensions of our render target and/or depth buffer
+	D3D11_VIEWPORT viewport = {};
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = (float)shadowMapSize;
+	viewport.Height = (float)shadowMapSize;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	context->RSSetViewports(1, &viewport);
+
+	// Set up shaders ============
+	// This VS stuff is the same for every entity
+	shadowVS->SetShader(); // Don't copy yet
+	shadowVS->SetMatrix4x4("view", shadowViewMatrix);
+	shadowVS->SetMatrix4x4("projection", shadowProjectionMatrix);
+
+	// Turn OFF the pixel shader entirely,
+	// since we don't need color output!
+	context->PSSetShader(0, 0, 0);
+
+	// Draw each entity ===================
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+	for (unsigned int i = 0; i < exhibits.size(); i++)
+	{
+		// Grab the data from the first entity's mesh
+		Entity* ge = exhibits[i];
+		ID3D11Buffer* vb = ge->GetMesh()->GetVertexBuffer();
+		ID3D11Buffer* ib = ge->GetMesh()->GetIndexBuffer();
+
+		// Set buffers in the input assembler
+		context->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+		context->IASetIndexBuffer(ib, DXGI_FORMAT_R32_UINT, 0);
+
+		// Copy entity-specific stuff to simple shader, and then to the GPU
+		// (This could be optimized slightly by having two different constant buffers)
+		shadowVS->SetMatrix4x4("world", ge->GetWorldMatrix());
+		shadowVS->CopyAllBufferData();
+
+		// Finally do the actual drawing
+		context->DrawIndexed(ge->GetMesh()->numVertices, 0, 0);///////////////////////////////////////////////////////////////////////////
+	}
+
+	// Reset back to "regular" rendering options/targets ===========
+	context->OMSetRenderTargets(1, &backBufferRTV, depthStencilView);
+	viewport.Width = (float)this->width;
+	viewport.Height = (float)this->height;
+	context->RSSetViewports(1, &viewport); // Viewport that matches screen size
+	context->RSSetState(0); // Default rasterizer options
+}
+
+void Game::DrawBloom()
+{
+	// Set buffers in the input assembler
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+
+	// Background color (Black in this case) for clearing
+	const float color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 	//backBufferRTV
 	// Done with scene render - swap back to the back buffer
@@ -600,7 +780,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	context->Draw(3, 0);
 	blurPS->SetShaderResourceView("Pixels", 0);
 
-	
+
 	// Done with scene render - swap back to the back buffer
 	context->OMSetRenderTargets(1, &finalRTV, 0);
 
@@ -621,7 +801,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	// Now that we're done, UNBIND the srv from the pixel shader
 	blurPS->SetShaderResourceView("Pixels", 0);
 
-	/**********************************************************************/	
+	/**********************************************************************/
 
 	// Done with scene render - swap back to the back buffer
 	context->OMSetRenderTargets(1, &backBufferRTV, 0);
@@ -643,7 +823,10 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	// Now that we're done, UNBIND the srv from the pixel shader
 	blurPS->SetShaderResourceView("Pixels", 0);
-	
+}
+
+void Game::DrawUI()
+{
 	//reset depth buffer before rendering UI
 	context->ClearDepthStencilView(
 		depthStencilView,
@@ -667,15 +850,6 @@ void Game::Draw(float deltaTime, float totalTime)
 	GUIElements[2]->GetMaterial()->GetPixelShader()->SetData("light", &fullBright, sizeof(DirectionalLight));
 	GUIElements[2]->GetMaterial()->GetPixelShader()->SetFloat3("cameraPosition", GUICamera->GetPosition());
 	GUIElements[2]->Render(GUICamera->GetView(), GUICamera->GetProjection());
-
-	// Reset any states we've changed for the next frame!
-	context->RSSetState(0);
-	context->OMSetDepthStencilState(0, 0);
-
-	// Present the back buffer to the user
-	//  - Puts the final frame we're drawing into the window so the user can see it
-	//  - Do this exactly ONCE PER FRAME (always at the very end of the frame)
-	swapChain->Present(0, 0);
 }
 
 

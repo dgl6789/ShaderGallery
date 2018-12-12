@@ -106,6 +106,11 @@ void Entity::SetScale(XMFLOAT3 pNewScale) {
 // Set the mesh this entity will render
 void Entity::SetMesh(Mesh * pMesh) { mesh = pMesh; }
 
+Mesh * Entity::GetMesh()
+{
+	return mesh;
+}
+
 // Set the material the mesh will be rendered with
 void Entity::SetMaterial(Material * pMaterial) { material = pMaterial; }
 

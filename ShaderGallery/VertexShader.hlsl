@@ -10,6 +10,8 @@ cbuffer externalData : register(b0)
 	matrix world;
 	matrix view;
 	matrix projection;
+	matrix lightView;
+	matrix lightProj;
 };
 
 // Struct representing a single vertex worth of data
@@ -47,6 +49,7 @@ struct VertexToPixel
 	float3 tangent		: TANGENT;		
 	float3 worldPos		: POSITION;
 	float2 uv			: TEXCOORD;		// UV location
+	float4 posForShadow : POSITION1; // Shadow map position information
 };
 
 // --------------------------------------------------------
@@ -69,6 +72,10 @@ VertexToPixel main( VertexShaderInput input )
 	// First we multiply them together to get a single matrix which represents
 	// all of those transformations (world to view to projection space)
 	matrix worldViewProj = mul(mul(world, view), projection);
+
+	//shadow matrix
+	matrix shadowWVP = mul(mul(world, lightView), lightProj);
+	output.posForShadow = mul(float4(input.position, 1.0f), shadowWVP);
 
 	// Then we convert our 3-component position vector to a 4-component vector
 	// and multiply it by our final 4x4 matrix.

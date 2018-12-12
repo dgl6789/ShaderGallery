@@ -53,9 +53,22 @@ private:
 	ID3D11RenderTargetView* blur2RTV;		// Allows us to render to a texture
 	ID3D11ShaderResourceView* blur2SRV;		// Allows us to sample from the same texture
 
+	// Shadow stuff ---------------------------
+	int shadowMapSize;
+	ID3D11DepthStencilView* shadowDSV;
+	ID3D11ShaderResourceView* shadowSRV;
+	ID3D11SamplerState* shadowSampler;
+	ID3D11RasterizerState* shadowRasterizer;
+	SimpleVertexShader* shadowVS;
+	DirectX::XMFLOAT4X4 shadowViewMatrix;
+	DirectX::XMFLOAT4X4 shadowProjectionMatrix;
+
 	SimplePixelShader* addBlendPS;
 	SimplePixelShader* blurPS;
 	SimpleVertexShader* ppVS;
+
+	SimplePixelShader* pixelShader;
+	SimpleVertexShader* vertexShader;
 
 	// Vector of active meshes
 	std::vector<Mesh*> meshes;
@@ -86,6 +99,11 @@ private:
 	void CreateBasicGeometry();
 	void DoStars();
 	void DoExhibits();
+	void SetUpShadowMap();
+
+	void DrawBloom();
+	void DrawUI();
+	void DrawShadowMap();
 
 	int starRating = -1;
 	int currentStarRating = -1;

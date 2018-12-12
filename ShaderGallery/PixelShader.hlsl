@@ -16,6 +16,7 @@ struct VertexToPixel
 	float3 tangent		: TANGENT;
 	float3 worldPos		: POSITION;
 	float2 uv			: TEXCOORD;
+	float4 posForShadow : POSITION1; // Shadow map position information
 };
 
 struct DirectionalLight {
@@ -32,10 +33,16 @@ cbuffer Camera : register(b2) {
 	float3 cameraPosition;
 }
 
+cbuffer ReceiveShadows : register(b3) {
+	int receiveShadows;
+};
+
 Texture2D diffuseTexture : register(t0);
 Texture2D specularMap : register(t1);
 Texture2D normalMap : register(t2);
+Texture2D ShadowMap			: register(t3);
 SamplerState basicSampler : register(s0);
+SamplerComparisonState ShadowSampler : register(s1);
 
 // --------------------------------------------------------
 // The entry point (main method) for our pixel shader
@@ -75,7 +82,28 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	NdotL = saturate(NdotL);
 
-	float4 color = surfaceColor * (light.AmbientColor + (light.DiffuseColor * NdotL) + specColor);
+	// Shadow map calculations ---------------
+
+	// posForShadow has the normalized device coords (-1 to 1) for rendering
+	// into a render target, but we need to convert to the (0 - 1) space
+	// for sampling FROM our shadow map
+	float2 shadowUV = input.posForShadow.xy / input.posForShadow.w * 0.5f + 0.5f;
+	shadowUV.y = 1.0f - shadowUV.y; // Flip the Y's
+
+									// Calculate this pixel's depth from the LIGHT
+	float depthFromLight = input.posForShadow.z / input.posForShadow.w;
+
+	// Sample where this pixel WOULD have been in the shadow map,
+	// and see how far the light saw along that ray
+	float shadowAmount = ShadowMap.SampleCmpLevelZero(ShadowSampler, shadowUV, depthFromLight);
+
+	float4 color;
+	if (receiveShadows == 0) {
+		color = surfaceColor * ((light.AmbientColor + shadowAmount * (light.DiffuseColor * NdotL) + specColor));
+	}
+	else {
+		color = surfaceColor * ((light.AmbientColor + (light.DiffuseColor * NdotL) + specColor));
+	}
 	color.a = diffuseTexture.Sample(basicSampler, input.uv).a;
 	return color;
 

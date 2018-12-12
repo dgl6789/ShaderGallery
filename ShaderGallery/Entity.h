@@ -34,6 +34,7 @@ public:
 	void SetScale(XMFLOAT3 pNewScale); // Set scale
 
 	void SetMesh(Mesh* pMesh); // Change/set mesh to render
+	Mesh* GetMesh();
 
 	void SetMaterial(Material* pMaterial); // Change/set the material to render
 

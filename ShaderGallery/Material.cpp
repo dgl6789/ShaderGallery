@@ -1,6 +1,6 @@
 #include "Material.h"
 
-Material::Material(SimpleVertexShader * pVertexShader, SimplePixelShader * pPixelShader)
+Material::Material(SimpleVertexShader* pVertexShader, SimplePixelShader* pPixelShader)
 {
 	SetVertexShader(pVertexShader);
 	SetPixelShader(pPixelShader);
@@ -12,8 +12,6 @@ Material::Material(SimpleVertexShader * pVertexShader, SimplePixelShader * pPixe
 
 Material::~Material()
 {
-	delete vertexShader;
-	delete pixelShader;
 	delete sampleDescription;
 	texture->Release();
 	specularMap->Release();
@@ -21,9 +19,9 @@ Material::~Material()
 	sampleState->Release();
 }
 
-SimpleVertexShader * Material::GetVertexShader() { return vertexShader; }
+SimpleVertexShader* Material::GetVertexShader() { return vertexShader; }
 
-SimplePixelShader * Material::GetPixelShader() { return pixelShader; }
+SimplePixelShader* Material::GetPixelShader() { return pixelShader; }
 
 ID3D11ShaderResourceView * Material::GetTexture() { return texture; }
 
@@ -33,9 +31,9 @@ ID3D11ShaderResourceView * Material::GetNormalMap() { return normalMap; }
 
 ID3D11SamplerState * Material::GetSampleState() { return sampleState; }
 
-void Material::SetVertexShader(SimpleVertexShader * pVertexShader) { vertexShader = pVertexShader; }
+void Material::SetVertexShader(SimpleVertexShader* pVertexShader) { vertexShader = pVertexShader; }
 
-void Material::SetPixelShader(SimplePixelShader * pPixelShader) { pixelShader = pPixelShader; }
+void Material::SetPixelShader(SimplePixelShader* pPixelShader) { pixelShader = pPixelShader; }
 
 void Material::SetTexture(ID3D11Device * device, ID3D11DeviceContext * context, wchar_t * fileName)
 {

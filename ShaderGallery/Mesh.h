@@ -13,6 +13,9 @@ public:
 
 	// Methods to set up the buffers this mesh needs to render.
 	void CreateBuffers(Vertex* vertArray, int numVerts, unsigned int* indexArray, int numIndices, ID3D11Device* device);
+	ID3D11Buffer* GetVertexBuffer();
+	ID3D11Buffer* GetIndexBuffer();
+
 
 	// Buffers to hold actual data
 	ID3D11Buffer* vertexBuffer;
