@@ -16,6 +16,12 @@
     <FxCompile Include="PostProcessVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="ParticleVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticlePS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXCore.cpp">
