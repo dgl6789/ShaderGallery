@@ -229,7 +229,6 @@ void Game::Init()
 	meshes.push_back(new Mesh(device, "../../Assets/Models/helix.obj"));
 
 	//GUI Mesh
-	//meshes.push_back(new Mesh(device, "../../Assets/Models/cube.obj"));
 	meshes.push_back(new Mesh(device, "../../Assets/Models/plane.obj"));
 
 	// Gallery base
@@ -242,6 +241,9 @@ void Game::Init()
 	meshes.push_back(new Mesh(device, "../../Assets/Models/bench.obj"));
 	meshes.push_back(new Mesh(device, "../../Assets/Models/painting_small_h.obj"));
 	meshes.push_back(new Mesh(device, "../../Assets/Models/wackysculpture1.obj"));
+	meshes.push_back(new Mesh(device, "../../Assets/Models/wackysculpture2.obj"));
+	meshes.push_back(new Mesh(device, "../../Assets/Models/wackysculpture3.obj"));
+	meshes.push_back(new Mesh(device, "../../Assets/Models/cube.obj"));
 
 	exhibits.push_back(new Entity(meshes[0], materials[5], context)); // tiles
 	exhibits.push_back(new Entity(meshes[0], materials[0], context)); // lava
@@ -252,6 +254,20 @@ void Game::Init()
 	exhibits.push_back(new Entity(meshes[9], materials[11], context)); // painting 2
 	exhibits.push_back(new Entity(meshes[5], materials[13], context)); // painting 3
 	exhibits.push_back(new Entity(meshes[10], materials[14], context)); // weird donut
+	exhibits.push_back(new Entity(meshes[11], materials[15], context)); // gold thingy
+
+	exhibits.push_back(new Entity(meshes[13], materials[16], context)); // swatches
+	exhibits.push_back(new Entity(meshes[13], materials[17], context));
+	exhibits.push_back(new Entity(meshes[13], materials[18], context));
+	exhibits.push_back(new Entity(meshes[13], materials[19], context));
+	exhibits.push_back(new Entity(meshes[13], materials[20], context));
+	exhibits.push_back(new Entity(meshes[13], materials[21], context));
+	exhibits.push_back(new Entity(meshes[13], materials[22], context));
+	exhibits.push_back(new Entity(meshes[13], materials[23], context));
+
+	exhibits.push_back(new Entity(meshes[12], materials[24], context));
+
+	exhibits.push_back(new Entity(meshes[9], materials[25], context));
 
 	exhibits[1]->SetPosition(XMFLOAT3(1, 0.75f, 5));
 	exhibits[0]->SetPosition(XMFLOAT3(-8, 0.9f, 5));
@@ -270,6 +286,20 @@ void Game::Init()
 	exhibits[6]->SetRotation(XMFLOAT3(0, 3.14f, 0));
 	exhibits[7]->SetPosition(XMFLOAT3(-18.5f, 1, 2.5f));
 	exhibits[7]->SetRotation(XMFLOAT3(0, 3.14f / 2, 0));
+	exhibits[8]->SetPosition(XMFLOAT3(15, -0.5f, 6));
+	exhibits[8]->SetRotation(XMFLOAT3(0, 0.35f, 0));
+	exhibits[18]->SetPosition(XMFLOAT3(-11.5f, 1, -2));
+	exhibits[18]->SetRotation(XMFLOAT3(0, 3.14f, 0));
+
+	// swatches
+	for (int i = 0; i < 8; i++) {
+		exhibits[9 + i]->SetScale(XMFLOAT3(1, 5, 0.1f));
+		exhibits[9 + i]->SetPosition(XMFLOAT3(16, 0, -8 - i));
+		exhibits[9 + i]->SetRotation(XMFLOAT3(0, 1.8f, 0));
+	}
+
+	exhibits[17]->SetPosition(XMFLOAT3(6, 0.5f, -2));
+	exhibits[17]->SetScale(XMFLOAT3(1, 0.5f, 1));
 
 	// Gallery base
 	entities.push_back(new Entity(meshes[4], materials[6], context));
@@ -578,12 +608,12 @@ void Game::LoadMaterials() {
 	materials.push_back(new Material(vertexShader, pixelShader));
 	materials[10]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/painting_1.png");
 	materials[10]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
-	materials[10]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/canvas_normal.png");
+	materials[10]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
 
 	materials.push_back(new Material(vertexShader, pixelShader));
 	materials[11]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/painting_2.png");
 	materials[11]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
-	materials[11]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/canvas_normal.png");
+	materials[11]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
 
 	// Particle Texture
 	materials.push_back(new Material(particleVS, particlePS));
@@ -600,6 +630,61 @@ void Game::LoadMaterials() {
 	materials[14]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/volcanic.png");
 	materials[14]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
 	materials[14]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/volcanic_normal.png");
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[15]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/gold.png");
+	materials[15]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/gold_specular.png");
+	materials[15]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[16]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/red.png");
+	materials[16]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/gold_specular.png");
+	materials[16]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[17]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/orange.png");
+	materials[17]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/gold_specular.png");
+	materials[17]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[18]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/yellow.png");
+	materials[18]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/gold_specular.png");
+	materials[18]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[19]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/green.png");
+	materials[19]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/gold_specular.png");
+	materials[19]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[20]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/blue.png");
+	materials[20]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/gold_specular.png");
+	materials[20]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[21]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/bluer.png");
+	materials[21]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/gold_specular.png");
+	materials[21]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[22]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/indigo.png");
+	materials[22]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/gold_specular.png");
+	materials[22]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[23]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/violet.png");
+	materials[23]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/gold_specular.png");
+	materials[23]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[24]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/cheese.png");
+	materials[24]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/gold_specular.png");
+	materials[24]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/cheese_normal.png");
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[25]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/painting_4.png");
+	materials[25]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
+	materials[25]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
 
 
 	//loop through all the ui star materials
@@ -657,6 +742,8 @@ void Game::Update(float deltaTime, float totalTime)
 	//rotate the helix that exists in entities
 	exhibits[0]->SetRotation(XMFLOAT3(0, totalTime * 0.5f, 0));
 	exhibits[1]->SetRotation(XMFLOAT3(0, totalTime * 0.5f, 0));
+
+	exhibits[8]->SetPosition(XMFLOAT3(15 + (rand() % 10 * 0.0015f), -0.5f + (rand() % 10 * 0.0015f), 6 + (rand() % 10 * 0.0015f)));
 
 	GUIElements[0]->SetPosition(XMFLOAT3((float)width / (2 * 100), 0.73f, 2));
 	GUIElements[1]->SetPosition(XMFLOAT3((float)width / (2 * 100), (float)height / (2 * 100), 2));
