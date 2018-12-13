@@ -235,17 +235,61 @@ void Game::Init()
 	// Gallery base
 	meshes.push_back(new Mesh(device, "../../Assets/Models/gallery.obj"));
 
+	// Exhibits
+	meshes.push_back(new Mesh(device, "../../Assets/Models/painting_large.obj"));
+	meshes.push_back(new Mesh(device, "../../Assets/Models/painting_small.obj"));
+	meshes.push_back(new Mesh(device, "../../Assets/Models/wackybigsculpture.obj"));
+	meshes.push_back(new Mesh(device, "../../Assets/Models/bench.obj"));
+	meshes.push_back(new Mesh(device, "../../Assets/Models/painting_small_h.obj"));
+	meshes.push_back(new Mesh(device, "../../Assets/Models/wackysculpture1.obj"));
 
-	exhibits.push_back(new Entity(meshes[0], materials[5], context));
-	exhibits.push_back(new Entity(meshes[0], materials[0], context));
-	exhibits[1]->SetPosition(XMFLOAT3(3, 0.25f, -3));
-	exhibits[0]->SetPosition(XMFLOAT3(-3, 0.4f, -3));
-	//entities.push_back(new Entity(meshes[1], materials[1], context));
+	exhibits.push_back(new Entity(meshes[0], materials[5], context)); // tiles
+	exhibits.push_back(new Entity(meshes[0], materials[0], context)); // lava
+	exhibits.push_back(new Entity(meshes[5], materials[7], context)); // big painting
+	exhibits.push_back(new Entity(meshes[7], materials[8], context)); // big sculpture
+
+	exhibits.push_back(new Entity(meshes[9], materials[10], context)); // painting 1
+	exhibits.push_back(new Entity(meshes[9], materials[11], context)); // painting 2
+	exhibits.push_back(new Entity(meshes[5], materials[13], context)); // painting 3
+	exhibits.push_back(new Entity(meshes[10], materials[14], context)); // weird donut
+
+	exhibits[1]->SetPosition(XMFLOAT3(1, 0.75f, 5));
+	exhibits[0]->SetPosition(XMFLOAT3(-8, 0.9f, 5));
+	exhibits[1]->SetScale(XMFLOAT3(2, 2, 2));
+	exhibits[0]->SetScale(XMFLOAT3(2, 2, 2));
+
+	exhibits[2]->SetPosition(XMFLOAT3(-4, 2, 16));
+
+	exhibits[3]->SetScale(XMFLOAT3(2, 2, 2));
+	exhibits[3]->SetPosition(XMFLOAT3(-4, -1, -15));
+
+	exhibits[4]->SetPosition(XMFLOAT3(-10.5f, 1.5f, -6)); // paintings
+	exhibits[5]->SetRotation(XMFLOAT3(0, 3.14f, 0));
+	exhibits[5]->SetPosition(XMFLOAT3(3, 1.5, -6));
+	exhibits[6]->SetPosition(XMFLOAT3(10.5f, 2.5, -18));
+	exhibits[6]->SetRotation(XMFLOAT3(0, 3.14f, 0));
+	exhibits[7]->SetPosition(XMFLOAT3(-18.5f, 1, 2.5f));
+	exhibits[7]->SetRotation(XMFLOAT3(0, 3.14f / 2, 0));
 
 	// Gallery base
 	entities.push_back(new Entity(meshes[4], materials[6], context));
 	entities[0]->SetPosition(XMFLOAT3(0.0f, -0.5f, 0.0f));
 	entities[0]->SetScale(XMFLOAT3(2.5f, 2.5f, 2.5f));
+
+	entities.push_back(new Entity(meshes[8], materials[9], context));
+	entities.push_back(new Entity(meshes[8], materials[9], context));
+	entities.push_back(new Entity(meshes[8], materials[9], context));
+	entities.push_back(new Entity(meshes[8], materials[9], context));
+	entities[1]->SetPosition(XMFLOAT3(-1.5f, -0.65f, 5)); // Benches
+	entities[1]->SetScale(XMFLOAT3(0.5f, 0.5f, 0.5f));
+	entities[2]->SetPosition(XMFLOAT3(-6, -0.65f, 5));
+	entities[2]->SetScale(XMFLOAT3(0.5f, 0.5f, 0.5f));
+	entities[3]->SetPosition(XMFLOAT3(-4, -0.65f, 11));
+	entities[3]->SetScale(XMFLOAT3(0.5f, 0.5f, 0.5f));
+	entities[3]->SetRotation(XMFLOAT3(0, 3.14f / 2, 0));
+	entities[4]->SetPosition(XMFLOAT3(10.5f, -0.65f, -13.5f));
+	entities[4]->SetScale(XMFLOAT3(0.5f, 0.5f, 0.5f));
+	entities[4]->SetRotation(XMFLOAT3(0, 3.14f / 2, 0));
 
 	//UI Elements
 	//Start Holder
@@ -287,8 +331,8 @@ void Game::Init()
 	// entities[1]->SetPosition(XMFLOAT3(worldBounds[6]->GetCenter().x, 1.0f, worldBounds[6]->GetCenter().z));
 
 	// Define the exhibit bounds
-	exhibitBounds.push_back(new BoundingBox(XMFLOAT3(-4.0f, 0.0f, -4.0f), XMFLOAT3(-2.0f, 0.0f, -2.0f)));	// Checker Sphere
-	exhibitBounds.push_back(new BoundingBox(XMFLOAT3(2.0f, 0.0f, -4.0f), XMFLOAT3(4.0f, 0.0f, -2.0f)));		// Lava Sphere
+	// exhibitBounds.push_back(new BoundingBox(XMFLOAT3(-4.0f, 0.0f, -4.0f), XMFLOAT3(-2.0f, 0.0f, -2.0f)));	// Checker Sphere
+	// exhibitBounds.push_back(new BoundingBox(XMFLOAT3(2.0f, 0.0f, -4.0f), XMFLOAT3(4.0f, 0.0f, -2.0f)));		// Lava Sphere
 
 	// Particle Emitters
 	// A depth state for the particles
@@ -315,19 +359,19 @@ void Game::Init()
 
 	// Create Emitters
 	emitters.push_back(new Emitter(
-		XMFLOAT3(0.0f, 0.0f, 0.0f),				// Position
-		XMFLOAT3(0.0f, 0.0002f, 0.0f),			// Initial Particle Velocity
+		XMFLOAT3(-18.5f, 2.75f, 2.75f),				// Position
+		XMFLOAT3(0.1f, 0.003125f, 0.1f),			// Initial Particle Velocity
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),		// Initial Particle Color
 		XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f),		// Final Particle Color
-		0.1f,									// Initial Particle Size
-		0.3f,									// Final Particle Size
+		1.25f,									// Initial Particle Size
+		0.45f,									// Final Particle Size
 		1000,									// Max Number of Particles
 		20.0f,									// Particles per Second
-		1.0f,									// Particle Lifetime
+		2.0f,									// Particle Lifetime
 		device,
-		materials[7]->GetVertexShader(),
-		materials[7]->GetPixelShader(),
-		materials[7]->GetTexture()
+		materials[12]->GetVertexShader(),
+		materials[12]->GetPixelShader(),
+		materials[12]->GetTexture()
 		));
 
 	light.AmbientColor = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
@@ -516,11 +560,47 @@ void Game::LoadMaterials() {
 	materials[6]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
 	materials[6]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
 
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[7]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/painting_0.png");
+	materials[7]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
+	materials[7]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/painting_0_normal.png");
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[8]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/marble.png");
+	materials[8]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/marbleSpecular.png");
+	materials[8]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/marbleNormal.png");
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[9]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/bench.png");
+	materials[9]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
+	materials[9]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[10]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/painting_1.png");
+	materials[10]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
+	materials[10]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/canvas_normal.png");
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[11]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/painting_2.png");
+	materials[11]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
+	materials[11]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/canvas_normal.png");
+
 	// Particle Texture
 	materials.push_back(new Material(particleVS, particlePS));
-	materials[7]->SetTexture(device, context, L"../../Assets/Textures/Particles/fireParticle.jpg");
-	materials[7]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/NO_SPEC.png");
-	materials[7]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+	materials[12]->SetTexture(device, context, L"../../Assets/Textures/Particles/fireParticle.jpg");
+	materials[12]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/NO_SPEC.png");
+	materials[12]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[13]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/painting_3.png");
+	materials[13]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/painting_3_specular.png");
+	materials[13]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[14]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/volcanic.png");
+	materials[14]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
+	materials[14]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/volcanic_normal.png");
+
 
 	//loop through all the ui star materials
 	for (int i = 0; i < 6; i++) {
