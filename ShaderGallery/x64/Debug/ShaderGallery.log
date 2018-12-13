@@ -1,4 +1,5 @@
-﻿  Emitter.cpp
+﻿  Camera.cpp
+  Emitter.cpp
 z:\igmprofile\documents\ggp\shadergallery\shadergallery\emitter.cpp(38): warning C4018: '<': signed/unsigned mismatch
 z:\igmprofile\documents\ggp\shadergallery\shadergallery\emitter.cpp(67): warning C4018: '<': signed/unsigned mismatch
 z:\igmprofile\documents\ggp\shadergallery\shadergallery\emitter.cpp(104): warning C4018: '<': signed/unsigned mismatch
@@ -7,4 +8,12 @@ z:\igmprofile\documents\ggp\shadergallery\shadergallery\emitter.cpp(118): warnin
 z:\igmprofile\documents\ggp\shadergallery\shadergallery\emitter.cpp(214): warning C4018: '<': signed/unsigned mismatch
 z:\igmprofile\documents\ggp\shadergallery\shadergallery\emitter.cpp(223): warning C4018: '<': signed/unsigned mismatch
 z:\igmprofile\documents\ggp\shadergallery\shadergallery\emitter.cpp(228): warning C4018: '<': signed/unsigned mismatch
+  Entity.cpp
+  Game.cpp
+z:\igmprofile\documents\ggp\shadergallery\shadergallery\game.cpp(256): warning C4305: 'argument': truncation from 'double' to 'float'
+  Main.cpp
+  Material.cpp
+  Mesh.cpp
+  Generating Code...
+  LINK : Z:\IGMProfile\Documents\GGP\ShaderGallery\x64\Debug\ShaderGallery.exe not found or not built by the last incremental link; performing full link
   ShaderGallery.vcxproj -> Z:\IGMProfile\Documents\GGP\ShaderGallery\x64\Debug\ShaderGallery.exe

@@ -105,6 +105,11 @@ Game::~Game()
 
 	delete sampleDescription;
 	sampleState->Release();
+
+	delete particlePS;
+	delete particleVS;
+	particleBlendState->Release();
+	particleDepthState->Release();
 }
 
 // --------------------------------------------------------
