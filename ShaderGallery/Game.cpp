@@ -305,7 +305,7 @@ void Game::Init()
 	//R to restart
 	GUIElements.push_back(new Entity(meshes[3], materials[4], context));
 	GUIElements[2]->SetRotation(XMFLOAT3(-(3.141592654f / 2), 0, 0));
-	GUIElements[2]->SetScale(XMFLOAT3(449.0 / 400, 93.0f / 400, 93.0f / 400));
+	GUIElements[2]->SetScale(XMFLOAT3(449.0f / 400, 93.0f / 400, 93.0f / 400));
 
 
 	// Define the world boundaries
