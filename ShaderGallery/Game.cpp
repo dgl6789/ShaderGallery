@@ -102,7 +102,15 @@ Game::~Game()
 
 	blur2SRV->Release();
 	blur2RTV->Release();
+	
+	skySRV->Release();
+	skyRasterizerState->Release();
+	skyDepthState->Release();
+	delete skyMesh;
 
+	delete skyPixelShader;
+	delete skyVertexShader;
+	
 	delete sampleDescription;
 	sampleState->Release();
 
@@ -360,8 +368,32 @@ void Game::Init()
 	float factors[] = { 1,1,1,1 };
 	context->OMSetBlendState(blend, factors, 0xFFFFFFFF);
 	/*************************************************************************/
-	SetUpShadowMap();
 
+	SetUpShadowMap();
+	
+	//Let's get that Sky Cube Map
+	CreateDDSTextureFromFile(device, context, L"../../Assets/Textures/Sky/SunnyCubeMap.dds", 0, &skySRV);
+
+	D3D11_RASTERIZER_DESC rs = {};
+	rs.FillMode = D3D11_FILL_SOLID;
+	rs.CullMode = D3D11_CULL_FRONT;
+	rs.DepthClipEnable = true;
+	device->CreateRasterizerState(&rs, &skyRasterizerState);
+
+	D3D11_DEPTH_STENCIL_DESC ds = {};
+	ds.DepthEnable = true;
+	ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	ds.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	device->CreateDepthStencilState(&ds, &skyDepthState);
+
+	skyVertexShader = new SimpleVertexShader(device, context);
+	skyVertexShader->LoadShaderFile(L"SkyBoxVS.cso");
+
+	skyPixelShader = new SimplePixelShader(device, context);
+	skyPixelShader->LoadShaderFile(L"SkyBoxPS.cso");
+
+	skyMesh = new Mesh(device, "../../Assets/Models/cube.obj");
+	
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
 	// Essentially: "What kind of shape should the GPU draw with our data?"
@@ -732,6 +764,42 @@ void Game::Draw(float deltaTime, float totalTime)
 		exhibits[i]->GetMaterial()->GetPixelShader()->SetFloat3("cameraPosition", GameCamera->GetPosition());
 		exhibits[i]->Render(GameCamera->GetView(), GameCamera->GetProjection());
 	}
+	
+	//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+	//SKYYYYYYYYBOXXXXXX
+	context->RSSetState(skyRasterizerState);
+	context->OMSetDepthStencilState(skyDepthState, 0);
+
+	// After drawing all of our regular (solid) objects, draw the sky!
+	ID3D11Buffer* skyVB = skyMesh->GetVertexBuffer();
+	ID3D11Buffer* skyIB = skyMesh->GetIndexBuffer();
+
+	// Set the buffers
+	context->IASetVertexBuffers(0, 1, &skyVB, &stride, &offset);
+	context->IASetIndexBuffer(skyIB, DXGI_FORMAT_R32_UINT, 0);
+
+	skyVertexShader->SetMatrix4x4("view", GameCamera->GetView());
+	skyVertexShader->SetMatrix4x4("projection", GameCamera->GetProjection());
+
+	skyVertexShader->CopyAllBufferData();
+	skyVertexShader->SetShader();
+
+	// Send texture-related stuff
+	skyPixelShader->SetShaderResourceView("SkyTex", skySRV);
+	skyPixelShader->SetSamplerState("SkySampler", sampleState);
+
+	skyPixelShader->CopyAllBufferData(); // Remember to copy to the GPU!!!!
+	skyPixelShader->SetShader();
+
+	// Finally do the actual drawing
+	context->DrawIndexed(skyMesh->GetIndexCount(), 0, 0);
+
+	//Reset changed states
+	context->RSSetState(0);
+	context->OMSetDepthStencilState(0, 0);
+	//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
 
 	// Particle states
 	float particleBlend[4] = { 1,1,1,1 };

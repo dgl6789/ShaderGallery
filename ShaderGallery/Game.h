@@ -12,6 +12,7 @@
 #include <vector>
 #include "BoundingBox.h"
 #include "Emitter.h"
+#include "DDSTextureLoader.h"
 
 class Mesh;
 class Entity;
@@ -77,6 +78,16 @@ private:
 	SimpleVertexShader* particleVS;
 	ID3D11DepthStencilState* particleDepthState;
 	ID3D11BlendState* particleBlendState;
+
+	//Sky
+	ID3D11ShaderResourceView* skySRV;
+	ID3D11DepthStencilState* skyDepthState;
+	ID3D11RasterizerState* skyRasterizerState;
+
+	Mesh* skyMesh;
+
+	SimpleVertexShader* skyVertexShader;
+	SimplePixelShader* skyPixelShader;
 
 	// Vector of active meshes
 	std::vector<Mesh*> meshes;
