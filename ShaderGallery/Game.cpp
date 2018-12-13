@@ -38,8 +38,8 @@ Game::Game(HINSTANCE hInstance)
 	XMStoreFloat4x4(
 		&shadowProjectionMatrix,
 		XMMatrixTranspose(XMMatrixOrthographicLH(
-			10,			// Width of projection "box"
-			10,			// Height of projection "box"
+			50,			// Width of projection "box"
+			50,			// Height of projection "box"
 			0.1f,		// Near clip dist
 			100.0f)));	// Far clip dist
 
@@ -447,7 +447,7 @@ void Game::Init()
 void Game::SetUpShadowMap()
 {
 	// Create shadow requirements ------------------------------------------
-	shadowMapSize = 1024;
+	shadowMapSize = 2048;
 
 
 	// Create the actual texture that will be the shadow map
@@ -820,6 +820,8 @@ void Game::Draw(float deltaTime, float totalTime)
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f,
 		0);
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
 
 	
 	// Set buffers in the input assembler

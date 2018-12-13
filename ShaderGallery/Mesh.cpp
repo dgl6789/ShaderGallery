@@ -212,16 +212,6 @@ void Mesh::CreateBuffers(Vertex* vertArray, int numVerts, unsigned int* indexArr
 	this->numIndices = numIndices;
 }
 
-ID3D11Buffer * Mesh::GetVertexBuffer()
-{
-	return vertexBuffer;
-}
-
-ID3D11Buffer * Mesh::GetIndexBuffer()
-{
-	return indexBuffer;
-}
-
 // Calculates the tangents of the vertices in a mesh
 // Code adapted from: http://www.terathon.com/code/tangent.html
 void Mesh::CalculateTangents(Vertex * verts, int numVerts, int * indices, int numIndices)
