@@ -1,1 +1,3 @@
-﻿  ShaderGallery.vcxproj -> D:\Documents\ShaderGallery\x64\Debug\ShaderGallery.exe
+﻿  Game.cpp
+d:\documents\shadergallery\shadergallery\game.cpp(300): warning C4305: 'argument': truncation from 'double' to 'float'
+  ShaderGallery.vcxproj -> D:\Documents\ShaderGallery\x64\Debug\ShaderGallery.exe

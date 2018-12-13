@@ -233,6 +233,7 @@ void Game::Init()
 	meshes.push_back(new Mesh(device, "../../Assets/Models/wackybigsculpture.obj"));
 	meshes.push_back(new Mesh(device, "../../Assets/Models/bench.obj"));
 	meshes.push_back(new Mesh(device, "../../Assets/Models/painting_small_h.obj"));
+	meshes.push_back(new Mesh(device, "../../Assets/Models/wackysculpture1.obj"));
 
 	exhibits.push_back(new Entity(meshes[0], materials[5], context)); // tiles
 	exhibits.push_back(new Entity(meshes[0], materials[0], context)); // lava
@@ -241,7 +242,8 @@ void Game::Init()
 
 	exhibits.push_back(new Entity(meshes[9], materials[10], context)); // painting 1
 	exhibits.push_back(new Entity(meshes[9], materials[11], context)); // painting 2
-
+	exhibits.push_back(new Entity(meshes[5], materials[13], context)); // painting 3
+	exhibits.push_back(new Entity(meshes[10], materials[14], context)); // weird donut
 
 	exhibits[1]->SetPosition(XMFLOAT3(1, 0.75f, 5));
 	exhibits[0]->SetPosition(XMFLOAT3(-8, 0.9f, 5));
@@ -256,12 +258,17 @@ void Game::Init()
 	exhibits[4]->SetPosition(XMFLOAT3(-10.5f, 1.5f, -6)); // paintings
 	exhibits[5]->SetRotation(XMFLOAT3(0, 3.14f, 0));
 	exhibits[5]->SetPosition(XMFLOAT3(3, 1.5, -6));
+	exhibits[6]->SetPosition(XMFLOAT3(10.5f, 2.5, -18));
+	exhibits[6]->SetRotation(XMFLOAT3(0, 3.14f, 0));
+	exhibits[7]->SetPosition(XMFLOAT3(-18.5f, 1, 2.5f));
+	exhibits[7]->SetRotation(XMFLOAT3(0, 3.14f / 2, 0));
 
 	// Gallery base
 	entities.push_back(new Entity(meshes[4], materials[6], context));
 	entities[0]->SetPosition(XMFLOAT3(0.0f, -0.5f, 0.0f));
 	entities[0]->SetScale(XMFLOAT3(2.5f, 2.5f, 2.5f));
 
+	entities.push_back(new Entity(meshes[8], materials[9], context));
 	entities.push_back(new Entity(meshes[8], materials[9], context));
 	entities.push_back(new Entity(meshes[8], materials[9], context));
 	entities.push_back(new Entity(meshes[8], materials[9], context));
@@ -272,6 +279,9 @@ void Game::Init()
 	entities[3]->SetPosition(XMFLOAT3(-4, -0.65f, 11));
 	entities[3]->SetScale(XMFLOAT3(0.5f, 0.5f, 0.5f));
 	entities[3]->SetRotation(XMFLOAT3(0, 3.14f / 2, 0));
+	entities[4]->SetPosition(XMFLOAT3(10.5f, -0.65f, -13.5f));
+	entities[4]->SetScale(XMFLOAT3(0.5f, 0.5f, 0.5f));
+	entities[4]->SetRotation(XMFLOAT3(0, 3.14f / 2, 0));
 
 	//UI Elements
 	//Start Holder
@@ -341,15 +351,15 @@ void Game::Init()
 
 	// Create Emitters
 	emitters.push_back(new Emitter(
-		XMFLOAT3(0.0f, 0.0f, 0.0f),				// Position
-		XMFLOAT3(0.0f, 0.0002f, 0.0f),			// Initial Particle Velocity
+		XMFLOAT3(-18.5f, 2.75f, 2.75f),				// Position
+		XMFLOAT3(0.1f, 0.003125f, 0.1f),			// Initial Particle Velocity
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),		// Initial Particle Color
 		XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f),		// Final Particle Color
-		0.1f,									// Initial Particle Size
-		0.3f,									// Final Particle Size
+		1.25f,									// Initial Particle Size
+		0.45f,									// Final Particle Size
 		1000,									// Max Number of Particles
 		20.0f,									// Particles per Second
-		1.0f,									// Particle Lifetime
+		2.0f,									// Particle Lifetime
 		device,
 		materials[12]->GetVertexShader(),
 		materials[12]->GetPixelShader(),
@@ -548,6 +558,16 @@ void Game::LoadMaterials() {
 	materials[12]->SetTexture(device, context, L"../../Assets/Textures/Particles/fireParticle.jpg");
 	materials[12]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/NO_SPEC.png");
 	materials[12]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[13]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/painting_3.png");
+	materials[13]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/painting_3_specular.png");
+	materials[13]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/NO_NORMAL.jpg");
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[14]->SetTexture(device, context, L"../../Assets/Textures/Diffuse/volcanic.png");
+	materials[14]->SetSpecularMap(device, context, L"../../Assets/Textures/Specular/ALL_SPEC.png");
+	materials[14]->SetNormalMap(device, context, L"../../Assets/Textures/Normal/volcanic_normal.png");
 
 
 	//loop through all the ui star materials
